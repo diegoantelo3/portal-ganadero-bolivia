@@ -232,7 +232,8 @@
     "lote_mixto": "Lote mixto",
     "ocr_critico": "Error OCR crítico",
     "sin_categoria": "Sin categoría para ese peso en este tipo de remate",
-    "precio_invalido": "Precio inexistente o fuera de rango"
+    "precio_invalido": "Precio inexistente o fuera de rango",
+    "cartel_inconsistente": "Cartel mal leído (la aritmética no cierra)"
   },
 
   "precio": {

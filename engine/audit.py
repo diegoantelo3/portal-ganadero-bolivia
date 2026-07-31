@@ -49,8 +49,9 @@ class CorreccionPeso:
     peso_leido: float
     peso_corregido: float
     diferencia_kg: float
-    subtotal_bs: float
+    base_bs: float          # el numero del cartel del que se derivo
     precio_bs_kg: float
+    fuente: str             # "total" o "subtotal"
 
 
 @dataclass
@@ -76,12 +77,13 @@ class Auditoria:
             categoria_asignada=categoria_asignada, peso_kg=peso_kg,
         ))
 
-    def corregir_peso(self, lote, peso_leido, peso_corregido, subtotal_bs, precio_bs_kg) -> None:
+    def corregir_peso(self, lote, peso_leido, peso_corregido, base_bs,
+                      precio_bs_kg, fuente="") -> None:
         self.correcciones_peso.append(CorreccionPeso(
             lote=lote, peso_leido=round(peso_leido, 2),
             peso_corregido=round(peso_corregido, 2),
             diferencia_kg=round(peso_corregido - peso_leido, 2),
-            subtotal_bs=subtotal_bs, precio_bs_kg=precio_bs_kg,
+            base_bs=base_bs, precio_bs_kg=precio_bs_kg, fuente=fuente,
         ))
 
     # -- consultas ---------------------------------------------------------

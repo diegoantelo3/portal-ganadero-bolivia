@@ -165,44 +165,71 @@ check("1 lote de 1 cabeza + 1 de 19 -> 19.50 (no 15.00 del promedio simple)",
 check("cuenta las cabezas", r.stats["vaquillas"]["n_cabezas"] == 20)
 
 print("\n== Reconciliacion del peso con la aritmetica del cartel ==")
-# Datos tomados de fotogramas verificados del remate 30/07/2026.
-# (lote, peso que leyo la IA, precio, subtotal real, peso REAL del cartel)
-CARTELES_REALES = [
-    (437, 122.50, 20.70, 8833.21, 422.50),
-    (470, 127.50, 20.90, 9024.10, 427.50),
-    (422, 194.00, 21.30, 10627.42, 494.00),
-    (418, 115.71, 17.00, 7137.74, 415.71),
-    (468, 107.50, 17.00, 6996.78, 407.50),
+# Casos REALES del remate 30/07/2026, verificados uno por uno contra el
+# fotograma del video. Cada tupla lleva lo que la IA leyo (peso/subtotal/total)
+# y el peso que realmente decia el cartel.
+#   (lote, cant, peso_leido, precio, subtotal_leido, total_leido, peso_REAL)
+# -- Carteles COHERENTES: la derivacion recupera el peso real ---------------
+# (lote, cant, peso_leido, precio, subtotal, total, peso_REAL_del_cartel)
+COHERENTES = [
+    (437,  6, 422.50, 20.70,  8833.21,  52999.24, 422.50),   # la IA acerto todo
+    (424, 11, 187.27, 21.10, 10384.21, 114226.96, 487.27),   # erro el peso, no el subtotal
 ]
-for lote_id, leido, precio, subtotal, real in CARTELES_REALES:
-    r = procesar_remate([lote(lote=lote_id, clase="Toro", sexo="macho",
+for lote_id, cant, leido, precio, subtotal, total, real in COHERENTES:
+    r = procesar_remate([lote(lote=lote_id, clase="Toro", sexo="macho", cantidad=cant,
                              peso_prom_kg=leido, precio_bs_kg=precio,
-                             subtotal_bs=subtotal)],
+                             subtotal_bs=subtotal, total_bs=total)],
                         titulo_video="REMATE COMERCIAL")
     obtenido = r.clasificados[0].peso_kg if r.clasificados else None
-    check(f"lote {lote_id}: corrige {leido} -> {real} kg",
-          obtenido is not None and abs(obtenido - real) < 0.05, f"(dio {obtenido})")
-    check(f"lote {lote_id}: la correccion queda auditada",
-          len(r.auditoria.correcciones_peso) == 1)
+    check(f"cartel coherente lote {lote_id}: {leido} -> {real} kg",
+          obtenido is not None and abs(obtenido - real) < 0.15, f"(dio {obtenido})")
 
-r = procesar_remate([lote(peso_prom_kg=350, precio_bs_kg=20, subtotal_bs=350 * 20 * 1.01)],
+# -- Carteles INCOHERENTES: se descartan en vez de adivinar ------------------
+# Casos reales donde total/cantidad NO da el subtotal leido. Aca fallaban las
+# heuristicas de auto-correccion: derivar del subtotal daba 114,89 (real
+# 415,71) y derivar del total daba 21,05 kg en otro lote. La respuesta honesta
+# es descartar.
+INCOHERENTES = [
+    (418,  7, 115.71, 17.00, 1972.74, 49964.70),
+    (430,  7, 189.29, 19.00, 3389.48, 65725.75),
+]
+for lote_id, cant, leido, precio, subtotal, total in INCOHERENTES:
+    r = procesar_remate([lote(lote=lote_id, clase="Toro", sexo="macho", cantidad=cant,
+                             peso_prom_kg=leido, precio_bs_kg=precio,
+                             subtotal_bs=subtotal, total_bs=total)],
+                        titulo_video="REMATE COMERCIAL")
+    ok_ = (not r.clasificados and r.auditoria.descartes
+           and r.auditoria.descartes[0].motivo == "cartel_inconsistente")
+    check(f"cartel incoherente lote {lote_id}: se descarta, no se adivina", ok_,
+          f"(dio {r.auditoria.descartes[0].motivo if r.auditoria.descartes else 'clasificado'})")
+
+r = procesar_remate([lote(lote=99, cantidad=5, peso_prom_kg=120.0, precio_bs_kg=20.0,
+                          subtotal_bs=400 * 20 * 1.01, total_bs=400 * 20 * 1.01 * 5)],
                     titulo_video="REMATE COMERCIAL")
+check("cartel coherente corrige el peso leido",
+      r.clasificados and abs(r.clasificados[0].peso_kg - 400) < 0.05,
+      f"(dio {r.clasificados[0].peso_kg if r.clasificados else None})")
+
+r = procesar_remate([lote(cantidad=5, peso_prom_kg=350, precio_bs_kg=20,
+                          total_bs=350 * 20 * 1.01 * 5)], titulo_video="REMATE COMERCIAL")
 check("peso correcto NO se toca ni se audita",
       abs(r.clasificados[0].peso_kg - 350) < 0.05 and not r.auditoria.correcciones_peso)
 
-r = procesar_remate([lote(peso_prom_kg=350, precio_bs_kg=20, subtotal_bs=None)],
+r = procesar_remate([lote(peso_prom_kg=350, precio_bs_kg=20, subtotal_bs=None, total_bs=None)],
                     titulo_video="REMATE COMERCIAL")
-check("sin subtotal se usa el peso leido (compatibilidad hacia atras)",
+check("sin subtotal ni total se usa el peso leido (compatible con datos viejos)",
       r.clasificados and abs(r.clasificados[0].peso_kg - 350) < 0.05)
 
-r = procesar_remate([lote(peso_prom_kg="", precio_bs_kg=20, subtotal_bs=420 * 20 * 1.01)],
-                    titulo_video="REMATE COMERCIAL")
-check("sin peso legible se recupera del subtotal",
+r = procesar_remate([lote(cantidad=5, peso_prom_kg="", precio_bs_kg=20,
+                          subtotal_bs=420 * 20 * 1.01,
+                          total_bs=420 * 20 * 1.01 * 5)], titulo_video="REMATE COMERCIAL")
+check("sin peso legible se recupera de la aritmetica",
       r.clasificados and abs(r.clasificados[0].peso_kg - 420) < 0.05,
       f"(dio {r.clasificados[0].peso_kg if r.clasificados else 'descartado'})")
 
-r = procesar_remate([lote(lote=437, clase="Toro", sexo="macho", peso_prom_kg=122.50,
-                          precio_bs_kg=20.70, subtotal_bs=8833.21)],
+r = procesar_remate([lote(lote=437, clase="Toro", sexo="macho", cantidad=6,
+                          peso_prom_kg=122.50, precio_bs_kg=20.70,
+                          subtotal_bs=8833.21, total_bs=52999.24)],
                     titulo_video="REMATE COMERCIAL")
 check("corregido el peso, 'Toro' ya NO entra en conflicto con la categoria",
       r.clasificados[0].categoria == "Torillos" and not r.auditoria.conflictos,

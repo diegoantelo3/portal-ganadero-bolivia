@@ -81,22 +81,50 @@ def validar_precio(bruto: dict, cfg: Config) -> Tuple[bool, Optional[float], str
     return True, precio, "", ""
 
 
-def peso_desde_subtotal(bruto: dict, precio: float, cfg: Config) -> Optional[float]:
-    """Recalcula el peso con la aritmetica del cartel.
+def cartel_coherente(bruto: dict, cfg: Config) -> Optional[bool]:
+    """El cartel debe cumplir  TOTAL = SUBTOTAL x CANTIDAD.
 
-        SUBTOTAL = PESO x PRECIO x (1 + comision)   =>   PESO = SUBTOTAL / (PRECIO x (1+c))
+    Es un chequeo de integridad sobre tres lecturas independientes. Si no
+    cierra, al menos una esta mal leida y NINGUN peso derivado de ellas es
+    confiable. Devuelve None si faltan datos para poder chequear.
 
-    Devuelve None si el cartel no aporto subtotal (o no es usable). Este peso
-    proviene de dos lecturas independientes, asi que es mas confiable que el
-    numero del recuadro de peso, donde la IA confunde digitos.
+    Por que hace falta: verificando contra fotogramas se vio que cuando la IA
+    lee mal el peso, con frecuencia devuelve un subtotal *consistente con su
+    propio error* (lote 418: leyo peso 115,71 y subtotal 1.972,74, que cierran
+    entre si, pero el cartel decia 415,71 y 7.137,74). Por eso el acuerdo entre
+    peso y subtotal no prueba nada; la coherencia con el total, si.
     """
     subtotal = a_numero(bruto.get("subtotal_bs"))
-    if subtotal is None or subtotal <= 0 or precio <= 0:
+    total = a_numero(bruto.get("total_bs"))
+    cantidad = a_numero(bruto.get("cantidad"))
+    if not (subtotal and subtotal > 0 and total and total > 0 and cantidad and cantidad >= 1):
         return None
-    divisor = precio * (1.0 + cfg.comision_cartel)
-    if divisor <= 0:
-        return None
-    return subtotal / divisor
+    esperado = total / cantidad
+    return abs(esperado - subtotal) / subtotal * 100.0 <= cfg.tolerancia_peso_pct
+
+
+def peso_desde_cartel(bruto: dict, precio: float, cfg: Config) -> Tuple[Optional[float], str]:
+    """Recalcula el peso con la aritmetica del cartel.
+
+        SUBTOTAL = PESO x PRECIO x (1 + comision)
+        =>  PESO = SUBTOTAL / (PRECIO x (1+c))
+
+    Solo tiene sentido llamarla cuando `cartel_coherente` dio True.
+    Devuelve (peso, fuente).
+    """
+    if precio <= 0:
+        return None, ""
+    factor = precio * (1.0 + cfg.comision_cartel)
+    if factor <= 0:
+        return None, ""
+    subtotal = a_numero(bruto.get("subtotal_bs"))
+    if subtotal and subtotal > 0:
+        return subtotal / factor, "subtotal"
+    total = a_numero(bruto.get("total_bs"))
+    cantidad = a_numero(bruto.get("cantidad"))
+    if total and total > 0 and cantidad and cantidad >= 1:
+        return total / (cantidad * factor), "total"
+    return None, ""
 
 
 def validar_peso(bruto: dict, precio: float, cfg: Config,
@@ -109,24 +137,35 @@ def validar_peso(bruto: dict, precio: float, cfg: Config,
     y la correccion queda auditada.
     """
     peso = a_numero(bruto.get("peso_prom_kg"))
-    derivado = peso_desde_subtotal(bruto, precio, cfg)
+    coherente = cartel_coherente(bruto, cfg)
 
-    if peso is None or peso <= 0:
-        # Sin peso legible, el derivado del subtotal es el unico dato disponible.
+    if coherente is False:
+        # El cartel no cierra consigo mismo: alguna cifra esta mal leida y no
+        # se puede saber cual. No se adivina — se descarta.
+        sub = a_numero(bruto.get("subtotal_bs"))
+        tot = a_numero(bruto.get("total_bs"))
+        cant = a_numero(bruto.get("cantidad"))
+        return False, None, "cartel_inconsistente", (
+            f"total/cantidad ({tot:.2f}/{cant:.0f} = {tot / cant:.2f}) no coincide "
+            f"con el subtotal leido ({sub:.2f}); alguna cifra del cartel esta mal leida")
+
+    if coherente is True:
+        derivado, fuente = peso_desde_cartel(bruto, precio, cfg)
+        base = a_numero(bruto.get("subtotal_bs")) if fuente == "subtotal" else a_numero(bruto.get("total_bs"))
         if derivado is not None and derivado > 0:
-            if auditoria is not None:
-                auditoria.corregir_peso(lote_id, 0.0, derivado,
-                                        a_numero(bruto.get("subtotal_bs")), precio)
-            peso = derivado
-        else:
-            return False, None, "peso_inexistente", "el cartel no arrojo peso promedio"
-    elif derivado is not None and derivado > 0:
-        desvio_pct = abs(peso - derivado) / derivado * 100.0
-        if desvio_pct > cfg.tolerancia_peso_pct:
-            if auditoria is not None:
-                auditoria.corregir_peso(lote_id, peso, derivado,
-                                        a_numero(bruto.get("subtotal_bs")), precio)
-            peso = derivado
+            if peso is None or peso <= 0:
+                if auditoria is not None:
+                    auditoria.corregir_peso(lote_id, 0.0, derivado, base, precio, fuente)
+                peso = derivado
+            elif abs(peso - derivado) / derivado * 100.0 > cfg.tolerancia_peso_pct:
+                if auditoria is not None:
+                    auditoria.corregir_peso(lote_id, peso, derivado, base, precio, fuente)
+                peso = derivado
+
+    # coherente is None -> el cartel no aporto las cifras para chequear; se usa
+    # el peso leido tal cual (compatibilidad con datos extraidos antes).
+    if peso is None or peso <= 0:
+        return False, None, "peso_inexistente", "el cartel no arrojo peso promedio"
 
     if not (cfg.peso_min_kg <= peso <= cfg.peso_max_kg):
         return False, None, "peso_fuera_de_rango", (

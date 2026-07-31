@@ -76,6 +76,30 @@ tipo de remate → **clasificación por peso** → clase como validación secund
 nunca elige categoría: si discrepa del peso, se registra como conflicto en la
 auditoría y se publica lo que dice el peso.
 
+### Control de integridad del cartel
+
+El cartel cumple dos identidades exactas:
+
+```
+SUBTOTAL = PESO × PRECIO × 1,01        (comisión del 1%)
+TOTAL    = SUBTOTAL × CANTIDAD
+```
+
+Antes de clasificar, el motor **verifica que el cartel cierre consigo mismo**.
+Si no cierra, alguna cifra está mal leída y el lote se descarta con motivo
+"Cartel mal leído" — no se intenta adivinar cuál de las tres cifras falló.
+
+Esto es necesario porque la IA confunde dígitos en la tipografía digital roja
+del cartel: en el remate del 30/07/2026 leyó **122,50 donde decía 422,50**
+(un "4" como "1", −300 kg exactos) en varios lotes. Peor aún, cuando erraba el
+peso a veces devolvía un subtotal *consistente con su propio error*, así que el
+acuerdo entre peso y subtotal no prueba nada — sólo la coherencia con el total.
+
+Cuando el cartel sí cierra, el peso se **recalcula** desde el subtotal y la
+corrección queda registrada. Señal de que el criterio funciona: aplicándolo,
+los conflictos clase-vs-peso pasaron de 8 a **0** — cuando el cartel es
+coherente, la clase y el peso coinciden solos.
+
 **El precio promedio es ponderado por cabezas**, no simple: un lote de 20
 animales pesa 20 veces más que uno de 1 en la referencia.
 
