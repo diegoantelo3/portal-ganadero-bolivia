@@ -30,12 +30,26 @@ jobs:
           if [ -n "$YOUTUBE_COOKIES" ]; then
             printf '%s' "$YOUTUBE_COOKIES" > cookies.txt
             echo "cookies.txt escrito: $(wc -l < cookies.txt) lineas, $(wc -c < cookies.txt) bytes."
-            echo "Primera linea (debe ser un comentario tipo '# Netscape HTTP Cookie File' o '# HTTP Cookie File'): $(head -n1 cookies.txt | cut -c1-40)"
+            if head -n1 cookies.txt | grep -qE '^# (Netscape|HTTP) Cookie File'; then
+              echo "Encabezado: OK (formato Netscape reconocido)"
+            else
+              echo "Encabezado: NO coincide con '# Netscape HTTP Cookie File' ni '# HTTP Cookie File'"
+            fi
             echo "Lineas con dominio youtube.com: $(grep -c 'youtube\.com' cookies.txt || true)"
+            echo "Lineas con dominio google.com: $(grep -c 'google\.com' cookies.txt || true)"
             echo "Lineas con retorno de carro (CRLF, no deberia haber): $(grep -c $'\r' cookies.txt || true)"
+            echo "Cookies clave presentes: SID=$(grep -c $'\tSID\t' cookies.txt || true) SAPISID=$(grep -c $'\tSAPISID\t' cookies.txt || true) LOGIN_INFO=$(grep -c $'\tLOGIN_INFO\t' cookies.txt || true)"
           else
             echo "No hay secreto YOUTUBE_COOKIES cargado; se sigue sin cookies (puede fallar por bloqueo de YouTube)."
           fi
+
+      - name: Debug - probar yt-dlp directo contra el video de hoy
+        run: |
+          echo "--- con cookies + android_vr ---"
+          python -m yt_dlp --no-warnings --cookies cookies.txt --extractor-args "youtube:player_client=android_vr" --list-formats "https://www.youtube.com/watch?v=haEa9Z6LQFA" || true
+          echo "--- con cookies, cliente por defecto (sin forzar) ---"
+          python -m yt_dlp --no-warnings --cookies cookies.txt --list-formats "https://www.youtube.com/watch?v=haEa9Z6LQFA" || true
+        continue-on-error: true
 
       - name: Revisar canal y actualizar el portal si hay remate nuevo
         env:
