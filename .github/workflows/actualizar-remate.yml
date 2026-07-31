@@ -29,7 +29,10 @@ jobs:
         run: |
           if [ -n "$YOUTUBE_COOKIES" ]; then
             printf '%s' "$YOUTUBE_COOKIES" > cookies.txt
-            echo "cookies.txt listo."
+            echo "cookies.txt escrito: $(wc -l < cookies.txt) lineas, $(wc -c < cookies.txt) bytes."
+            echo "Primera linea (debe ser un comentario tipo '# Netscape HTTP Cookie File' o '# HTTP Cookie File'): $(head -n1 cookies.txt | cut -c1-40)"
+            echo "Lineas con dominio youtube.com: $(grep -c 'youtube\.com' cookies.txt || true)"
+            echo "Lineas con retorno de carro (CRLF, no deberia haber): $(grep -c $'\r' cookies.txt || true)"
           else
             echo "No hay secreto YOUTUBE_COOKIES cargado; se sigue sin cookies (puede fallar por bloqueo de YouTube)."
           fi

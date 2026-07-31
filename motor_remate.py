@@ -70,7 +70,7 @@ def get_stream_url(video_url: str) -> str:
     )
     lines = [l for l in out.stdout.strip().splitlines() if l.startswith("http")]
     if not lines:
-        raise SystemExit("ERROR: no se pudo obtener el stream.\n" + out.stderr[:300])
+        raise SystemExit("ERROR: no se pudo obtener el stream.\n" + out.stderr[-2000:])
     return lines[0]
 
 
@@ -81,7 +81,7 @@ def get_video_meta(video_url: str) -> dict:
         capture_output=True, text=True,
     )
     if out.returncode != 0 or not out.stdout.strip():
-        raise SystemExit("ERROR: no se pudo leer metadata del video.\n" + out.stderr[:300])
+        raise SystemExit("ERROR: no se pudo leer metadata del video.\n" + out.stderr[-2000:])
     info = json.loads(out.stdout)
     return {
         "id": info.get("id"),
@@ -99,7 +99,7 @@ def get_channel_latest_videos(channel_url: str, limit: int = 8) -> list:
         capture_output=True, text=True,
     )
     if out.returncode != 0 or not out.stdout.strip():
-        raise SystemExit("ERROR: no se pudo listar el canal.\n" + out.stderr[:300])
+        raise SystemExit("ERROR: no se pudo listar el canal.\n" + out.stderr[-2000:])
     info = json.loads(out.stdout)
     entries = info.get("entries") or []
     videos = []
