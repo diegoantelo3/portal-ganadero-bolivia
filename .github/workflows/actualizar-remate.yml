@@ -23,6 +23,17 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
+      - name: Preparar cookies de YouTube (evita el bloqueo a servidores en la nube)
+        env:
+          YOUTUBE_COOKIES: ${{ secrets.YOUTUBE_COOKIES }}
+        run: |
+          if [ -n "$YOUTUBE_COOKIES" ]; then
+            printf '%s' "$YOUTUBE_COOKIES" > cookies.txt
+            echo "cookies.txt listo."
+          else
+            echo "No hay secreto YOUTUBE_COOKIES cargado; se sigue sin cookies (puede fallar por bloqueo de YouTube)."
+          fi
+
       - name: Revisar canal y actualizar el portal si hay remate nuevo
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -30,6 +41,7 @@ jobs:
 
       - name: Publicar cambios (si los hay)
         run: |
+          rm -f cookies.txt
           git config user.name "portal-ganadero-bot"
           git config user.email "actions@users.noreply.github.com"
           git add -A

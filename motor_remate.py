@@ -40,15 +40,27 @@ import cv2
 # --------------------------------------------------------------------------
 # YouTube bloquea seguido los pedidos que vienen de servidores en la nube
 # (GitHub Actions, AWS, etc.) con un chequeo "Sign in to confirm you're not
-# a bot". Pedirle a yt-dlp que se identifique como la app de Android (que no
-# pide ese chequeo) evita el bloqueo sin necesidad de cookies de una cuenta.
-YT_ARGS = ["--extractor-args", "youtube:player_client=android,web"]
+# a bot". Cambiar el "cliente" no alcanza en esas IPs; hace falta una cookie
+# de sesion real. Si existe un cookies.txt (lo escribe el workflow a partir
+# del secreto YOUTUBE_COOKIES), se usa. Si no, sigue funcionando igual para
+# uso local en una PC normal, donde ese bloqueo casi nunca aparece.
+COOKIES_FILE = os.environ.get(
+    "YTDLP_COOKIES_FILE",
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "cookies.txt"),
+)
+
+
+def yt_args():
+    args = ["--extractor-args", "youtube:player_client=android,web"]
+    if os.path.exists(COOKIES_FILE):
+        args += ["--cookies", COOKIES_FILE]
+    return args
 
 
 def get_stream_url(video_url: str) -> str:
     print("· Obteniendo stream del video...")
     out = subprocess.run(
-        [sys.executable, "-m", "yt_dlp", "--no-warnings", *YT_ARGS, "-f", "18", "-g", video_url],
+        [sys.executable, "-m", "yt_dlp", "--no-warnings", *yt_args(), "-f", "18", "-g", video_url],
         capture_output=True, text=True,
     )
     lines = [l for l in out.stdout.strip().splitlines() if l.startswith("http")]
@@ -60,7 +72,7 @@ def get_stream_url(video_url: str) -> str:
 def get_video_meta(video_url: str) -> dict:
     """Duracion, fecha de subida y titulo del video (sin descargarlo)."""
     out = subprocess.run(
-        [sys.executable, "-m", "yt_dlp", "--no-warnings", *YT_ARGS, "-J", "--skip-download", video_url],
+        [sys.executable, "-m", "yt_dlp", "--no-warnings", *yt_args(), "-J", "--skip-download", video_url],
         capture_output=True, text=True,
     )
     if out.returncode != 0 or not out.stdout.strip():
@@ -77,7 +89,7 @@ def get_video_meta(video_url: str) -> dict:
 def get_channel_latest_videos(channel_url: str, limit: int = 8) -> list:
     """Lista los ultimos videos de un canal (sin descargar nada), mas nuevo primero."""
     out = subprocess.run(
-        [sys.executable, "-m", "yt_dlp", "--no-warnings", *YT_ARGS, "--flat-playlist",
+        [sys.executable, "-m", "yt_dlp", "--no-warnings", *yt_args(), "--flat-playlist",
          "--playlist-end", str(limit), "-J", channel_url],
         capture_output=True, text=True,
     )
