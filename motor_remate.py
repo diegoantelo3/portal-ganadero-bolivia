@@ -38,10 +38,17 @@ import cv2
 # --------------------------------------------------------------------------
 # 1. Obtener la URL directa del stream (sin descargar el video entero)
 # --------------------------------------------------------------------------
+# YouTube bloquea seguido los pedidos que vienen de servidores en la nube
+# (GitHub Actions, AWS, etc.) con un chequeo "Sign in to confirm you're not
+# a bot". Pedirle a yt-dlp que se identifique como la app de Android (que no
+# pide ese chequeo) evita el bloqueo sin necesidad de cookies de una cuenta.
+YT_ARGS = ["--extractor-args", "youtube:player_client=android,web"]
+
+
 def get_stream_url(video_url: str) -> str:
     print("· Obteniendo stream del video...")
     out = subprocess.run(
-        [sys.executable, "-m", "yt_dlp", "--no-warnings", "-f", "18", "-g", video_url],
+        [sys.executable, "-m", "yt_dlp", "--no-warnings", *YT_ARGS, "-f", "18", "-g", video_url],
         capture_output=True, text=True,
     )
     lines = [l for l in out.stdout.strip().splitlines() if l.startswith("http")]
@@ -53,7 +60,7 @@ def get_stream_url(video_url: str) -> str:
 def get_video_meta(video_url: str) -> dict:
     """Duracion, fecha de subida y titulo del video (sin descargarlo)."""
     out = subprocess.run(
-        [sys.executable, "-m", "yt_dlp", "--no-warnings", "-J", "--skip-download", video_url],
+        [sys.executable, "-m", "yt_dlp", "--no-warnings", *YT_ARGS, "-J", "--skip-download", video_url],
         capture_output=True, text=True,
     )
     if out.returncode != 0 or not out.stdout.strip():
@@ -70,7 +77,7 @@ def get_video_meta(video_url: str) -> dict:
 def get_channel_latest_videos(channel_url: str, limit: int = 8) -> list:
     """Lista los ultimos videos de un canal (sin descargar nada), mas nuevo primero."""
     out = subprocess.run(
-        [sys.executable, "-m", "yt_dlp", "--no-warnings", "--flat-playlist",
+        [sys.executable, "-m", "yt_dlp", "--no-warnings", *YT_ARGS, "--flat-playlist",
          "--playlist-end", str(limit), "-J", channel_url],
         capture_output=True, text=True,
     )
