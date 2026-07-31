@@ -51,12 +51,15 @@ COOKIES_FILE = os.environ.get(
 
 
 def yt_args():
-    # Las cookies son de una sesion "web"; forzar el cliente android junto
-    # con cookies rompe la seleccion de formatos (quedan desincronizados).
-    # Con cookies alcanza y sobra para pasar el chequeo de bot.
+    # "android_vr" es el cliente que trae la lista completa de formatos
+    # (incluido el "18" que usa el motor) para videos con reclamos de
+    # copyright de fondo musical, que bloquean al cliente "web" normal.
+    # Las cookies hacen falta aparte para pasar el chequeo de bot de
+    # servidores en la nube (GitHub Actions, etc.).
+    args = ["--extractor-args", "youtube:player_client=android_vr"]
     if os.path.exists(COOKIES_FILE):
-        return ["--cookies", COOKIES_FILE]
-    return ["--extractor-args", "youtube:player_client=android,web"]
+        args += ["--cookies", COOKIES_FILE]
+    return args
 
 
 def get_stream_url(video_url: str) -> str:
