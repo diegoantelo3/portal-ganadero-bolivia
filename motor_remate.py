@@ -51,10 +51,12 @@ COOKIES_FILE = os.environ.get(
 
 
 def yt_args():
-    args = ["--extractor-args", "youtube:player_client=android,web"]
+    # Las cookies son de una sesion "web"; forzar el cliente android junto
+    # con cookies rompe la seleccion de formatos (quedan desincronizados).
+    # Con cookies alcanza y sobra para pasar el chequeo de bot.
     if os.path.exists(COOKIES_FILE):
-        args += ["--cookies", COOKIES_FILE]
-    return args
+        return ["--cookies", COOKIES_FILE]
+    return ["--extractor-args", "youtube:player_client=android,web"]
 
 
 def get_stream_url(video_url: str) -> str:
