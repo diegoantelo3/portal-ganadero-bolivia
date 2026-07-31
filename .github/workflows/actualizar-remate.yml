@@ -1,9 +1,22 @@
-name: Actualizar remate FERCOGAN
+# DESACTIVADO — no funciona desde los servidores de GitHub.
+#
+# YouTube le entrega a las IPs de servidores en la nube (GitHub, AWS, Google
+# Cloud) una version recortada del video, sin ningun formato reproducible:
+# solo miniaturas. Eso pasa con cookies y con cualquier cliente forzado, asi
+# que no hay arreglo posible desde el codigo. Comprobado el 31/07/2026.
+#
+# La actualizacion corre en la PC de Cindy con el Programador de tareas de
+# Windows (ver ACTUALIZAR-PORTAL.bat y README.md), donde YouTube si entrega
+# el video completo.
+#
+# Se deja el workflow por si algun dia se contrata un proxy residencial: en
+# ese caso, descomentar el bloque "schedule" y agregar el proxy al motor.
+
+name: Actualizar remate FERCOGAN (desactivado)
 
 on:
-  schedule:
-    # 09:00 hora Bolivia (UTC-4) = 13:00 UTC, todos los dias
-    - cron: "0 13 * * *"
+  # schedule:
+  #   - cron: "0 13 * * *"
   workflow_dispatch: {}
 
 jobs:
@@ -23,33 +36,16 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
 
-      - name: Preparar cookies de YouTube (evita el bloqueo a servidores en la nube)
+      - name: Preparar cookies de YouTube
         env:
           YOUTUBE_COOKIES: ${{ secrets.YOUTUBE_COOKIES }}
         run: |
           if [ -n "$YOUTUBE_COOKIES" ]; then
             printf '%s' "$YOUTUBE_COOKIES" > cookies.txt
-            echo "cookies.txt escrito: $(wc -l < cookies.txt) lineas, $(wc -c < cookies.txt) bytes."
-            if head -n1 cookies.txt | grep -qE '^# (Netscape|HTTP) Cookie File'; then
-              echo "Encabezado: OK (formato Netscape reconocido)"
-            else
-              echo "Encabezado: NO coincide con '# Netscape HTTP Cookie File' ni '# HTTP Cookie File'"
-            fi
-            echo "Lineas con dominio youtube.com: $(grep -c 'youtube\.com' cookies.txt || true)"
-            echo "Lineas con dominio google.com: $(grep -c 'google\.com' cookies.txt || true)"
-            echo "Lineas con retorno de carro (CRLF, no deberia haber): $(grep -c $'\r' cookies.txt || true)"
-            echo "Cookies clave presentes: SID=$(grep -c $'\tSID\t' cookies.txt || true) SAPISID=$(grep -c $'\tSAPISID\t' cookies.txt || true) LOGIN_INFO=$(grep -c $'\tLOGIN_INFO\t' cookies.txt || true)"
+            echo "cookies.txt escrito: $(wc -l < cookies.txt) lineas."
           else
-            echo "No hay secreto YOUTUBE_COOKIES cargado; se sigue sin cookies (puede fallar por bloqueo de YouTube)."
+            echo "No hay secreto YOUTUBE_COOKIES cargado."
           fi
-
-      - name: Debug - probar yt-dlp directo contra el video de hoy
-        run: |
-          echo "--- con cookies + android_vr ---"
-          python -m yt_dlp --no-warnings --cookies cookies.txt --extractor-args "youtube:player_client=android_vr" --list-formats "https://www.youtube.com/watch?v=haEa9Z6LQFA" || true
-          echo "--- con cookies, cliente por defecto (sin forzar) ---"
-          python -m yt_dlp --no-warnings --cookies cookies.txt --list-formats "https://www.youtube.com/watch?v=haEa9Z6LQFA" || true
-        continue-on-error: true
 
       - name: Revisar canal y actualizar el portal si hay remate nuevo
         env:

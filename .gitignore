@@ -3,4 +3,5 @@ __pycache__/
 frames/
 clave.txt
 cookies.txt
+registro.log
 .venv/
