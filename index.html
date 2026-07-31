@@ -144,11 +144,12 @@
   .stat .l{font-size:12px; color:var(--ink-mut); letter-spacing:.02em;}
   .chart-card{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:24px; box-shadow:0 10px 28px rgba(30,67,56,.04);}
   .chart-card .cap{font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--olive); margin-bottom:18px;}
-  .bars{display:flex; align-items:flex-end; justify-content:space-around; gap:22px; height:230px; padding-top:10px;}
-  .bar-col{display:flex; flex-direction:column; align-items:center; gap:0; height:100%; justify-content:flex-end; flex:1;}
-  .bar-val{font-family:var(--serif); font-weight:700; color:var(--ink-h); font-size:17px; font-variant-numeric:tabular-nums; margin-bottom:9px;}
+  /* gap y tipografia se achican solos cuando hay muchas categorias con datos */
+  .bars{display:flex; align-items:flex-end; justify-content:space-around; gap:clamp(5px,1.4vw,22px); height:230px; padding-top:10px;}
+  .bar-col{display:flex; flex-direction:column; align-items:center; gap:0; height:100%; justify-content:flex-end; flex:1; min-width:0;}
+  .bar-val{font-family:var(--serif); font-weight:700; color:var(--ink-h); font-size:clamp(12px,1.3vw,17px); font-variant-numeric:tabular-nums; margin-bottom:9px;}
   .bar{width:100%; max-width:66px; background:var(--lime-d); border-radius:5px 5px 0 0; transition:height .8s cubic-bezier(.2,.7,.2,1);}
-  .bar-lote{margin-top:12px; font-size:12.5px; color:var(--ink-m); font-weight:600;}
+  .bar-lote{margin-top:12px; font-size:clamp(10px,1.05vw,12.5px); color:var(--ink-m); font-weight:600; text-align:center; line-height:1.25; hyphens:auto;}
   .bar-base{height:1px; background:var(--line); width:100%; margin-top:0;}
 
   /* Traceability steps */
@@ -266,18 +267,18 @@
         <span class="glyph">↗</span>
         <div class="k">Precio máximo</div>
         <div class="v">Bs 28,50<span style="font-size:15px;color:var(--ink-mut);font-family:var(--sans);font-weight:500;">/kg</span></div>
-        <div class="s">Ternero Nelore H. DE . T. REG. · Lote 461</div>
+        <div class="s">Destete Machos Nelore · Lote 461</div>
       </div>
       <div class="icard">
         <span class="glyph">◆</span>
         <div class="k">Lotes vendidos leídos</div>
-        <div class="v">36 lotes</div>
-        <div class="s">5 categorías con datos</div>
+        <div class="v">24 lotes</div>
+        <div class="s">10 categorías con datos</div>
       </div>
       <div class="icard">
         <span class="glyph">✓</span>
         <div class="k">Cabezas registradas</div>
-        <div class="v">205</div>
+        <div class="v">182</div>
         <div class="s">Audio y pantalla contrastados</div>
       </div>
     </div>
@@ -296,43 +297,79 @@
     <div class="cat-cards">
             <div class="catcard">
         <div class="cn">Ternero</div>
-        <div class="cw">macho de destete · 150–230 kg</div>
-        <div class="cp">Bs 28,50<small> /kg</small></div>
-        <div class="cm">1 lote en el remate</div>
+        <div class="cw">macho · hasta 130 kg</div>
+        <div class="cp">Bs 20,82<small> /kg</small></div>
+        <div class="cm">2 lotes · 16 cabezas</div>
       </div>
       <div class="catcard">
-        <div class="cn">Macho de recría</div>
-        <div class="cw">torillo / novillo · 220–350 kg</div>
-        <div class="cp">Bs 20,93<small> /kg</small></div>
-        <div class="cm">4 lotes en el remate</div>
+        <div class="cn">Destete Machos</div>
+        <div class="cw">macho · 131–220 kg</div>
+        <div class="cp">Bs 23,14<small> /kg</small></div>
+        <div class="cm">4 lotes · 51 cabezas</div>
       </div>
       <div class="catcard">
-        <div class="cn">Toro / novillo gordo</div>
-        <div class="cw">terminado · 380+ kg</div>
-        <div class="cp">Bs 20,06<small> /kg</small></div>
-        <div class="cm">9 lotes en el remate</div>
+        <div class="cn">Torillos Recría</div>
+        <div class="cw">macho · 221–300 kg</div>
+        <div class="cp">Bs 24,50<small> /kg</small></div>
+        <div class="cm">1 lote · 17 cabezas</div>
+      </div>
+      <div class="catcard">
+        <div class="cn">Torillos para Engorde</div>
+        <div class="cw">macho · 301–400 kg</div>
+        <div class="cp">Bs 21,59<small> /kg</small></div>
+        <div class="cm">2 lotes · 27 cabezas</div>
+      </div>
+      <div class="catcard nodata">
+        <div class="cn">Torillos</div>
+        <div class="cw">macho · 401–520 kg</div>
+        <div class="cp">Sin datos aún</div>
+        <div class="cm" style="color:var(--ink-mut)">No apareció en este remate</div>
+      </div>
+      <div class="catcard">
+        <div class="cn">Toros Gordos</div>
+        <div class="cw">macho · 521 kg en adelante</div>
+        <div class="cp">Bs 19,50<small> /kg</small></div>
+        <div class="cm">1 lote · 3 cabezas</div>
       </div>
     </div>
 
     <div class="cat-group-label">Hembras</div>
     <div class="cat-cards">
-            <div class="catcard nodata">
+            <div class="catcard">
         <div class="cn">Ternera</div>
-        <div class="cw">hembra de destete · 150–230 kg</div>
+        <div class="cw">hembra · hasta 130 kg</div>
+        <div class="cp">Bs 17,00<small> /kg</small></div>
+        <div class="cm">2 lotes · 13 cabezas</div>
+      </div>
+      <div class="catcard">
+        <div class="cn">Destete Hembras</div>
+        <div class="cw">hembra · 131–210 kg</div>
+        <div class="cp">Bs 17,00<small> /kg</small></div>
+        <div class="cm">1 lote · 4 cabezas</div>
+      </div>
+      <div class="catcard nodata">
+        <div class="cn">Vaquillas Recría</div>
+        <div class="cw">hembra · 211–270 kg</div>
         <div class="cp">Sin datos aún</div>
         <div class="cm" style="color:var(--ink-mut)">No apareció en este remate</div>
       </div>
       <div class="catcard">
-        <div class="cn">Hembra de recría</div>
-        <div class="cw">vaquilla / vaquillona · 240–440 kg</div>
-        <div class="cp">Bs 17,66<small> /kg</small></div>
-        <div class="cm">13 lotes en el remate</div>
+        <div class="cn">Vaquillas Reposición</div>
+        <div class="cw">hembra · 271–320 kg</div>
+        <div class="cp">Bs 19,35<small> /kg</small></div>
+        <div class="cm">2 lotes · 12 cabezas</div>
       </div>
       <div class="catcard">
-        <div class="cn">Vaca gorda</div>
-        <div class="cw">terminada · 330–465 kg</div>
-        <div class="cp">Bs 16,06<small> /kg</small></div>
-        <div class="cm">9 lotes en el remate</div>
+        <div class="cn">Vaquillas</div>
+        <div class="cw">hembra · 321–430 kg</div>
+        <div class="cp">Bs 17,65<small> /kg</small></div>
+        <div class="cm">6 lotes · 28 cabezas</div>
+      </div>
+      <div class="catcard">
+        <div class="cn">Vacas</div>
+        <div class="cw">hembra · 431 kg en adelante</div>
+        <div class="cp">Bs 18,32<small> /kg</small></div>
+        <div class="cm">3 lotes · 11 cabezas</div>
       </div>
     </div>
   </div>
@@ -348,19 +385,25 @@
         <div class="field" style="margin-top:22px;">
           <label for="ecat">Categoría</label>
           <select id="ecat">
-                        <option value="28.50" selected>Ternero (macho)</option>
-            <option value="20.93">Macho de recría</option>
-            <option value="20.06">Toro / novillo gordo</option>
-            <option value="">Ternera (hembra) (sin datos aún)</option>
-            <option value="17.66">Hembra de recría (vaquilla)</option>
-            <option value="16.06">Vaca gorda</option>
+                        <option value="20.82" selected>Ternero (macho)</option>
+            <option value="23.14">Destete Machos</option>
+            <option value="24.50">Torillos Recría</option>
+            <option value="21.59">Torillos para Engorde</option>
+            <option value="">Torillos (sin datos aún)</option>
+            <option value="19.50">Toros Gordos</option>
+            <option value="17.00">Ternera (hembra)</option>
+            <option value="17.00">Destete Hembras</option>
+            <option value="">Vaquillas Recría (sin datos aún)</option>
+            <option value="19.35">Vaquillas Reposición</option>
+            <option value="17.65">Vaquillas</option>
+            <option value="18.32">Vacas</option>
           </select>
         </div>
         <div class="field">
           <label for="epeso">Peso del animal</label>
           <div class="wrow">
-            <input type="range" id="epeso" min="100" max="500" step="10" value="250">
-            <span class="wout" id="epesoOut">250 kg</span>
+            <input type="range" id="epeso" min="50" max="900" step="10" value="300">
+            <span class="wout" id="epesoOut">300 kg</span>
           </div>
         </div>
       </div>
@@ -435,19 +478,24 @@
         <h2 class="serif" style="font-size:clamp(26px,3.4vw,36px);color:var(--ink-h);line-height:1.1;margin:0 0 14px;letter-spacing:-.01em;">El precio cambia según la categoría.</h2>
         <p style="color:var(--ink-m);font-size:16px;margin:0;">Un ternero se paga muy distinto a una vaca gorda. Por eso la referencia útil es el promedio por categoría, y no un número mezclado.</p>
         <div class="stat-row">
-          <div class="stat"><div class="n">Bs 12,44</div><div class="l">Entre la más cara y la más barata</div></div>
-          <div class="stat"><div class="n">205</div><div class="l">Animales registrados</div></div>
-          <div class="stat"><div class="n">36</div><div class="l">Lotes vendidos</div></div>
+          <div class="stat"><div class="n">Bs 7,50</div><div class="l">Entre la más cara y la más barata</div></div>
+          <div class="stat"><div class="n">182</div><div class="l">Animales registrados</div></div>
+          <div class="stat"><div class="n">24</div><div class="l">Lotes vendidos</div></div>
         </div>
       </div>
       <div class="chart-card">
         <div class="cap">Precio promedio por categoría · Bs/kg</div>
         <div class="bars" id="bars">
-                    <div class="bar-col"><div class="bar-val">28,50</div><div class="bar" data-v="28.50"></div><div class="bar-base"></div><div class="bar-lote">Ternero</div></div>
-          <div class="bar-col"><div class="bar-val">20,93</div><div class="bar" data-v="20.93"></div><div class="bar-base"></div><div class="bar-lote">M. recría</div></div>
-          <div class="bar-col"><div class="bar-val">20,06</div><div class="bar" data-v="20.06"></div><div class="bar-base"></div><div class="bar-lote">Toro</div></div>
-          <div class="bar-col"><div class="bar-val">17,66</div><div class="bar" data-v="17.66"></div><div class="bar-base"></div><div class="bar-lote">H. recría</div></div>
-          <div class="bar-col"><div class="bar-val">16,06</div><div class="bar" data-v="16.06"></div><div class="bar-base"></div><div class="bar-lote">Vaca gorda</div></div>
+                    <div class="bar-col"><div class="bar-val">24,50</div><div class="bar" data-v="24.50"></div><div class="bar-base"></div><div class="bar-lote">Tor. recría</div></div>
+          <div class="bar-col"><div class="bar-val">23,14</div><div class="bar" data-v="23.14"></div><div class="bar-base"></div><div class="bar-lote">Destete M.</div></div>
+          <div class="bar-col"><div class="bar-val">21,59</div><div class="bar" data-v="21.59"></div><div class="bar-base"></div><div class="bar-lote">Tor. engorde</div></div>
+          <div class="bar-col"><div class="bar-val">20,82</div><div class="bar" data-v="20.82"></div><div class="bar-base"></div><div class="bar-lote">Ternero</div></div>
+          <div class="bar-col"><div class="bar-val">19,50</div><div class="bar" data-v="19.50"></div><div class="bar-base"></div><div class="bar-lote">Toros gordos</div></div>
+          <div class="bar-col"><div class="bar-val">19,35</div><div class="bar" data-v="19.35"></div><div class="bar-base"></div><div class="bar-lote">Vaq. repos.</div></div>
+          <div class="bar-col"><div class="bar-val">18,32</div><div class="bar" data-v="18.32"></div><div class="bar-base"></div><div class="bar-lote">Vacas</div></div>
+          <div class="bar-col"><div class="bar-val">17,65</div><div class="bar" data-v="17.65"></div><div class="bar-base"></div><div class="bar-lote">Vaquillas</div></div>
+          <div class="bar-col"><div class="bar-val">17,00</div><div class="bar" data-v="17.00"></div><div class="bar-base"></div><div class="bar-lote">Ternera</div></div>
+          <div class="bar-col"><div class="bar-val">17,00</div><div class="bar" data-v="17.00"></div><div class="bar-base"></div><div class="bar-lote">Destete H.</div></div>
         </div>
       </div>
     </div>
@@ -515,7 +563,7 @@
 <script>
   // ---- 1. Animar barras (promedio por categoria) ----
   window.addEventListener("DOMContentLoaded", () => {
-    const max = 32.77;
+    const max = 28.17;
     document.querySelectorAll("#bars .bar").forEach(b => {
       const v = parseFloat(b.dataset.v);
       b.style.height = "0%";
@@ -527,7 +575,7 @@
 
   // ---- 2. Tabla: lotes del remate (30/07/2026) ----
   (function(){
-    const lots = [{"lote": 401, "cat": "Vaquilla", "raza": "Brahman SIN PRENEZ", "edad": "3 Años", "cab": 5, "peso": 362.73, "pk": 20.7, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=4135s"}, {"lote": 405, "cat": "Vaca", "raza": "Brahman SIN PRENEZ", "edad": "5 Años", "cab": 5, "peso": 440.0, "pk": 17.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=3585s"}, {"lote": 406, "cat": "Vaquillona", "raza": "Nelore", "edad": "4 Años", "cab": 6, "peso": 405.55, "pk": 18.5, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=4760s"}, {"lote": 408, "cat": "Vaquilla", "raza": "Nelore", "edad": "3 Años", "cab": 4, "peso": 0.0, "pk": 17.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=4385s"}, {"lote": 416, "cat": "Vaquilla", "raza": "Nelore", "edad": "2 Años", "cab": 7, "peso": 274.29, "pk": 19.6, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=5010s"}, {"lote": 418, "cat": "Vaquilla", "raza": "Nelore", "edad": "4 Años", "cab": 7, "peso": 0.0, "pk": 17.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=5710s"}, {"lote": 422, "cat": "Toro", "raza": "Nelore", "edad": "3 años", "cab": 10, "peso": 0.0, "pk": 21.3, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=7385s"}, {"lote": 424, "cat": "Toro", "raza": "Nelore", "edad": "3 Años", "cab": 11, "peso": 0.0, "pk": 21.1, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=7810s"}, {"lote": 429, "cat": "Toro", "raza": "Nelore", "edad": "3 años", "cab": 15, "peso": 0.0, "pk": 20.5, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=7960s"}, {"lote": 430, "cat": "Toro", "raza": "Brahman", "edad": "3 Años", "cab": 7, "peso": 389.48, "pk": 19.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=6710s"}, {"lote": 435, "cat": "Torillo", "raza": "Nelore", "edad": "2 Años", "cab": 20, "peso": 382.5, "pk": 22.5, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=10185s"}, {"lote": 437, "cat": "Toro", "raza": "Nelore", "edad": "3 Años", "cab": 6, "peso": 0.0, "pk": 20.7, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=8160s"}, {"lote": 446, "cat": "Vaquilla", "raza": "Nelore", "edad": "2.5 Años", "cab": 5, "peso": 298.0, "pk": 19.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=2985s"}, {"lote": 447, "cat": "Vaquillona", "raza": "Nelore", "edad": "4 Años", "cab": 6, "peso": 345.83, "pk": 16.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=3085s"}, {"lote": 451, "cat": "Vaca", "raza": "Nelore", "edad": "5 Años", "cab": 6, "peso": 323.33, "pk": 15.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=2685s"}, {"lote": 460, "cat": "Vaca", "raza": "Brahman", "edad": "5 Años", "cab": 2, "peso": 422.5, "pk": 18.6, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=1785s"}, {"lote": 461, "cat": "Ternero", "raza": "Nelore H. DE . T. REG.", "edad": "10 Meses", "cab": 15, "peso": 166.33, "pk": 28.5, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=11185s"}, {"lote": 464, "cat": "Torillo", "raza": "Anelorado", "edad": "2 Años", "cab": 17, "peso": 232.65, "pk": 24.5, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=10885s"}, {"lote": 468, "cat": "Vaquillona", "raza": "Nelore", "edad": "4 Años", "cab": 6, "peso": 0.0, "pk": 17.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=6160s"}, {"lote": 470, "cat": "Toro", "raza": "Nelore", "edad": "3 Años", "cab": 10, "peso": 0.0, "pk": 20.9, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=8360s"}, {"lote": 476, "cat": "Vaca", "raza": "Gyr", "edad": "5 Años", "cab": 1, "peso": 370.0, "pk": 16.2, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=2385s"}, {"lote": 478, "cat": "Vaquilla", "raza": "Mestizo", "edad": "2.5 Años", "cab": 1, "peso": 315.0, "pk": 12.1, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=935s"}, {"lote": 483, "cat": "Vaquillona", "raza": "Gyr", "edad": "4 Años", "cab": 1, "peso": 430.0, "pk": 18.4, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=685s"}, {"lote": 487, "cat": "Vaca", "raza": "Mestizo", "edad": "5 Años", "cab": 1, "peso": 360.0, "pk": 16.5, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=810s"}, {"lote": 489, "cat": "Vaquilla", "raza": "Mestizo", "edad": "3 Años", "cab": 2, "peso": 365.0, "pk": 16.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=2185s"}, {"lote": 490, "cat": "Novillo", "raza": "Mestizo", "edad": "4 Años", "cab": 1, "peso": 415.0, "pk": 18.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=2110s"}, {"lote": 493, "cat": "Novillo", "raza": "Mestizo", "edad": "4 Años", "cab": 1, "peso": 460.0, "pk": 19.5, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=60s"}, {"lote": 497, "cat": "Vaca", "raza": "Mestizo", "edad": "5 Años", "cab": 1, "peso": 350.0, "pk": 14.4, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=185s"}, {"lote": 499, "cat": "Vaca", "raza": "Mestizo", "edad": "5 Años", "cab": 2, "peso": 355.0, "pk": 15.4, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=1485s"}, {"lote": 902, "cat": "Vaca", "raza": "Holando", "edad": "5 Años", "cab": 1, "peso": 0.0, "pk": 12.4, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=1235s"}, {"lote": 907, "cat": "Vaca", "raza": "Nelore", "edad": "5 Años", "cab": 1, "peso": 455.0, "pk": 19.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=1035s"}, {"lote": 909, "cat": "Vaquillona", "raza": "Nelore", "edad": "4 Años", "cab": 3, "peso": 390.0, "pk": 18.8, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=2535s"}, {"lote": 914, "cat": "Toro", "raza": "Nelore", "edad": "5 Años", "cab": 3, "peso": 563.0, "pk": 19.5, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=9610s"}, {"lote": 922, "cat": "Butorete", "raza": "Mediterranea", "edad": "2 Años", "cab": 6, "peso": 0.0, "pk": 18.5, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=9435s"}, {"lote": 924, "cat": "Butorete", "raza": "Mediterranea", "edad": "2 Años", "cab": 5, "peso": 0.0, "pk": 18.2, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=9310s"}, {"lote": 930, "cat": "Vaquillona", "raza": "Nelore", "edad": "4 años", "cab": 5, "peso": 0.0, "pk": 19.5, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=6510s"}];
+    const lots = [{"lote": 401, "cat": "Vaquillas", "raza": "Brahman", "edad": "3 Años", "cab": 5, "peso": 362.73, "pk": 20.7, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=4135s"}, {"lote": 405, "cat": "Vacas", "raza": "Brahman", "edad": "5 Años", "cab": 5, "peso": 440.0, "pk": 17.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=3585s"}, {"lote": 406, "cat": "Vaquillas", "raza": "Nelore", "edad": "4 Años", "cab": 6, "peso": 405.55, "pk": 18.5, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=4760s"}, {"lote": 408, "cat": "Destete Hembras", "raza": "Nelore", "edad": "3 Años", "cab": 4, "peso": 137.5, "pk": 17.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=4385s"}, {"lote": 416, "cat": "Vaquillas Reposición", "raza": "Nelore", "edad": "2 Años", "cab": 7, "peso": 274.29, "pk": 19.6, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=5010s"}, {"lote": 418, "cat": "Ternera", "raza": "Nelore", "edad": "4 Años", "cab": 7, "peso": 115.71, "pk": 17.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=5710s"}, {"lote": 422, "cat": "Destete Machos", "raza": "Nelore", "edad": "3 años", "cab": 10, "peso": 194.0, "pk": 21.3, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=7385s"}, {"lote": 424, "cat": "Destete Machos", "raza": "Nelore", "edad": "3 Años", "cab": 11, "peso": 187.27, "pk": 21.1, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=7810s"}, {"lote": 429, "cat": "Destete Machos", "raza": "Nelore", "edad": "3 años", "cab": 15, "peso": 174.0, "pk": 20.5, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=7960s"}, {"lote": 430, "cat": "Torillos para Engorde", "raza": "Brahman", "edad": "3 Años", "cab": 7, "peso": 389.48, "pk": 19.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=6710s"}, {"lote": 435, "cat": "Torillos para Engorde", "raza": "Nelore", "edad": "2 Años", "cab": 20, "peso": 382.5, "pk": 22.5, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=10185s"}, {"lote": 437, "cat": "Ternero", "raza": "Nelore", "edad": "3 Años", "cab": 6, "peso": 122.5, "pk": 20.7, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=8160s"}, {"lote": 446, "cat": "Vaquillas Reposición", "raza": "Nelore", "edad": "2.5 Años", "cab": 5, "peso": 298.0, "pk": 19.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=2985s"}, {"lote": 447, "cat": "Vaquillas", "raza": "Nelore", "edad": "4 Años", "cab": 6, "peso": 345.83, "pk": 16.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=3085s"}, {"lote": 451, "cat": "Vaquillas", "raza": "Nelore", "edad": "5 Años", "cab": 6, "peso": 323.33, "pk": 15.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=2685s"}, {"lote": 460, "cat": "Vaquillas", "raza": "Brahman", "edad": "5 Años", "cab": 2, "peso": 422.5, "pk": 18.6, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=1785s"}, {"lote": 461, "cat": "Destete Machos", "raza": "Nelore", "edad": "10 Meses", "cab": 15, "peso": 166.33, "pk": 28.5, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=11185s"}, {"lote": 464, "cat": "Torillos Recría", "raza": "Nelore", "edad": "2 Años", "cab": 17, "peso": 232.65, "pk": 24.5, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=10885s"}, {"lote": 468, "cat": "Ternera", "raza": "Nelore", "edad": "4 Años", "cab": 6, "peso": 107.5, "pk": 17.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=6160s"}, {"lote": 470, "cat": "Ternero", "raza": "Nelore", "edad": "3 Años", "cab": 10, "peso": 127.5, "pk": 20.9, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=8360s"}, {"lote": 907, "cat": "Vacas", "raza": "Nelore", "edad": "5 Años", "cab": 1, "peso": 455.0, "pk": 19.0, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=1035s"}, {"lote": 909, "cat": "Vaquillas", "raza": "Nelore", "edad": "4 Años", "cab": 3, "peso": 390.0, "pk": 18.8, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=2535s"}, {"lote": 914, "cat": "Toros Gordos", "raza": "Nelore", "edad": "5 Años", "cab": 3, "peso": 563.0, "pk": 19.5, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=9610s"}, {"lote": 930, "cat": "Vacas", "raza": "Nelore", "edad": "4 años", "cab": 5, "peso": 527.0, "pk": 19.5, "url": "https://www.youtube.com/watch?v=haEa9Z6LQFA&t=6510s"}];
     const fmt = n => n.toLocaleString("es-BO",{minimumFractionDigits:2,maximumFractionDigits:2});
     const fmt0 = n => n.toLocaleString("es-BO");
     const tb = document.getElementById("rlotes");

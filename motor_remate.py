@@ -179,7 +179,7 @@ Campos:
 - "lote": numero de lote (entero) o null
 - "cantidad": cantidad de cabezas (entero) o null
 - "clase": categoria TAL CUAL dice el cartel (ej. "Vaca","Vaquilla","Vaquillona","Torillo","Toro","Ternero","Ternera") o null
-- "sexo": "macho" o "hembra". Deducilo de la clase: Ternero/Torillo/Toro/Novillo = macho; Ternera/Vaquilla/Vaquillona/Vaca = hembra.
+- "sexo": "macho", "hembra" o "mixto". Deducilo de la clase: Ternero/Torillo/Toro/Novillo = macho; Ternera/Vaquilla/Vaquillona/Vaca = hembra. Si el cartel dice explicitamente que el lote lleva machos Y hembras, pon "mixto".
 - "edad": texto de edad (ej. "5 años","8 meses") o null
 - "raza": raza (ej. "Nelore","Holando","Mestizo","Anelorado","Brahman","Criollo") o null
 - "peso_prom_kg": peso promedio en kg (numero, tipicamente 100-500). NO es el subtotal en Bs.
@@ -193,46 +193,19 @@ El recuadro de precio muestra:  PESO PROMEDIO  x  PRECIO  =  subtotal Bs  /  tot
 
 Reglas:
 - OJO con el sexo del ternero: si el cartel dice "Ternera" es HEMBRA, si dice "Ternero" es MACHO. Leelo con cuidado.
+- No inventes el sexo: si el cartel no permite deducirlo, pon null. Es preferible null a una suposicion.
 - Si la pantalla NO muestra un lote (esta vacia, es publicidad o el logo), devuelve {"vacio": true}.
 - Si el precio marca 0, el lote esta EN PUJA: incluye igual los datos con "precio_bs_kg": 0.
 Devuelve unicamente el JSON."""
 
 
-def categoria_portal(clase, sexo=None):
-    """Mapea la clase del cartel a una de las 6 categorias del portal.
-
-    Devuelve "" si la clase no corresponde a ninguna: eso pasa cuando la IA
-    lee mal el cartel (p.ej. "Butorete"), y esos lotes se descartan en vez de
-    inventar una categoria que el portal no tiene.
-    """
-    c = (clase or "").lower()
-    if "ternera" in c:
-        return "Ternera"
-    if "ternero" in c:
-        return "Ternero"
-    if "torillo" in c or "novillito" in c or "torete" in c:
-        return "Macho de recría"
-    if "toro" in c or "novillo" in c:
-        return "Toro / novillo gordo"
-    if "vaquilla" in c or "vaquillona" in c:
-        return "Hembra de recría"
-    if "vaca" in c:
-        return "Vaca gorda"
-    return ""
-
-
-# Rango de peso plausible por categoria. La IA a veces toma otro numero del
-# cartel como peso (un "Toro" de 122 kg es imposible), asi que el peso fuera
-# de rango se descarta y el lote se publica sin peso: el PRECIO, que es el
-# dato importante y se lee bien, se conserva igual.
-PESO_POR_CATEGORIA = {
-    "Ternero":              (110, 290),
-    "Ternera":              (110, 290),
-    "Macho de recría":      (180, 400),
-    "Toro / novillo gordo": (320, 750),
-    "Hembra de recría":     (190, 500),
-    "Vaca gorda":           (270, 600),
-}
+# NOTA DE ARQUITECTURA
+# --------------------
+# Este archivo es SOLO el extractor: convierte un video en filas crudas.
+# NO clasifica, NO valida reglas de negocio y NO conoce las categorias del
+# portal. Toda esa logica vive en `engine/` y se configura en
+# `config/clasificacion.json`. Si necesitas cambiar categorias, rangos de peso
+# o razas aceptadas, no toques este archivo.
 
 
 def read_lot_with_claude(jpeg_bytes, client, model):
@@ -287,7 +260,16 @@ def extraer_lotes_vendidos(video_url, start=60, end=11700, step=25,
 
     client = client or get_client()
     print(f"· Leyendo {len(lots)} lotes con IA ({model})...")
-    vendidos = {}   # dedupe por numero de lote, se queda con el precio mas alto
+
+    # El unico filtro que aplica el EXTRACTOR es el de deduplicacion: el mismo
+    # lote aparece en varios frames y hay que quedarse con el precio de cierre
+    # (el mas alto). Para eso necesita un rango de precio plausible, que toma
+    # de la misma configuracion que usa el motor de clasificacion -> no hay
+    # numeros duplicados entre este archivo y engine/.
+    from engine import cargar_config
+    cfg = cargar_config()
+
+    vendidos = {}
     for k, l in enumerate(lots):
         d = read_lot_with_claude(crop_to_jpeg(l["crop"]), client, model)
         if d.get("vacio") or not d.get("lote"):
@@ -296,29 +278,12 @@ def extraer_lotes_vendidos(video_url, start=60, end=11700, step=25,
             precio = float(d.get("precio_bs_kg") or 0)
         except (TypeError, ValueError):
             precio = 0
-        if precio <= 0:                       # en puja: se descarta
+        # precio 0 = lote en puja, todavia sin cierre: no sirve para dedupe.
+        if not (cfg.precio_min_bs_kg <= precio <= cfg.precio_max_bs_kg):
             continue
-        if not (5 <= precio <= 45):           # fuera de rango = lectura dudosa
-            print(f"  ~ lote {d.get('lote')}: precio dudoso ({precio}) -> a revisar, se omite")
-            continue
-        cat = categoria_portal(d.get("clase"), d.get("sexo"))
-        if not cat:      # clase mal leida ("Butorete", etc.): no es publicable
-            print(f"  ~ lote {d.get('lote')}: clase desconocida ({d.get('clase')!r}) -> se omite")
-            continue
-        try:
-            peso = float(d.get("peso_prom_kg") or 0)
-        except (TypeError, ValueError):
-            peso = 0
-        # Peso implausible para la categoria = la IA leyo otro numero del cartel.
-        # Se descarta el peso (queda en blanco) pero se conserva el lote: el
-        # precio es el dato que importa y se lee bien.
-        pmin, pmax = PESO_POR_CATEGORIA[cat]
-        if not (pmin <= peso <= pmax):
-            if peso:
-                print(f"  ~ lote {d.get('lote')} ({cat}): peso dudoso ({peso} kg) -> se publica sin peso")
-            peso = ""
-        d["peso_prom_kg"] = peso
-        d["categoria_portal"] = cat
+
+        # Se guarda TODO tal cual lo leyo la IA. Validar y clasificar es
+        # responsabilidad de engine/, no de este archivo.
         d["segundo_video"] = l["t"]
         prev = vendidos.get(d["lote"])
         if prev is None or precio > (prev.get("precio_bs_kg") or 0):
@@ -327,11 +292,11 @@ def extraer_lotes_vendidos(video_url, start=60, end=11700, step=25,
             print(f"  ... {k+1}/{len(lots)} frames procesados")
 
     filas = sorted(vendidos.values(), key=lambda x: x["lote"])
-    print(f"· Lotes VENDIDOS extraidos: {len(filas)}")
+    print(f"· Lotes con precio de cierre extraidos: {len(filas)}")
     return filas, meta
 
 
-CAMPOS_CSV = ["lote", "cantidad", "clase", "sexo", "categoria_portal", "edad",
+CAMPOS_CSV = ["lote", "cantidad", "clase", "sexo", "edad",
               "raza", "peso_prom_kg", "precio_bs_kg", "procedencia", "segundo_video"]
 
 
@@ -372,15 +337,16 @@ def main():
     escribir_csv(filas, args.out)
     print(f"· LISTO -> {args.out}")
 
-    # ---- Resumen por categoria (para el reporte) ----
-    from collections import defaultdict
-    g = defaultdict(list)
-    for d in filas:
-        if d.get("precio_bs_kg"):
-            g[d.get("clase") or "?"].append(d["precio_bs_kg"])
-    print("\n  Promedio Bs/kg por categoria:")
-    for cat, v in sorted(g.items(), key=lambda kv: -sum(kv[1]) / len(kv[1])):
-        print(f"    {cat:12} {sum(v)/len(v):6.2f}   ({len(v)} lotes)")
+    # ---- Resumen usando el motor de clasificacion (no reglas propias) ----
+    from engine import procesar_remate
+    r = procesar_remate(filas, titulo_video=meta.get("title", ""))
+    print("\n  Precio promedio ponderado por categoria:")
+    for cat_id, s in r.stats.items():
+        if s:
+            print(f"    {s['nombre']:24} {s['precio_bs_kg']:6.2f} Bs/kg "
+                  f"({s['n_lotes']} lotes / {s['n_cabezas']} cabezas)")
+    print("\n  Auditoria:")
+    r.auditoria.imprimir(prefijo="    ")
 
 
 if __name__ == "__main__":

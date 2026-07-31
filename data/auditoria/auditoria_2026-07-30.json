@@ -1,0 +1,230 @@
+{
+  "tipo_remate": "COMPLEMENTARIOS",
+  "tipo_remate_detectado": true,
+  "total_entrada": 36,
+  "total_clasificados": 24,
+  "total_descartados": 12,
+  "resumen_por_motivo": {
+    "Raza inválida": 12
+  },
+  "descartes": [
+    {
+      "lote": 476,
+      "motivo": "raza_invalida",
+      "motivo_texto": "Raza inválida",
+      "detalle": "raza 'Gyr' no esta entre las aceptadas (Nelore, Brahman)",
+      "datos": {
+        "clase": "Vaca",
+        "sexo": "hembra",
+        "raza": "Gyr",
+        "peso_prom_kg": 370.0,
+        "precio_bs_kg": 16.2,
+        "cantidad": 1
+      }
+    },
+    {
+      "lote": 478,
+      "motivo": "raza_invalida",
+      "motivo_texto": "Raza inválida",
+      "detalle": "raza 'Mestizo' no esta entre las aceptadas (Nelore, Brahman)",
+      "datos": {
+        "clase": "Vaquilla",
+        "sexo": "hembra",
+        "raza": "Mestizo",
+        "peso_prom_kg": 315.0,
+        "precio_bs_kg": 12.1,
+        "cantidad": 1
+      }
+    },
+    {
+      "lote": 483,
+      "motivo": "raza_invalida",
+      "motivo_texto": "Raza inválida",
+      "detalle": "raza 'Gyr' no esta entre las aceptadas (Nelore, Brahman)",
+      "datos": {
+        "clase": "Vaquillona",
+        "sexo": "hembra",
+        "raza": "Gyr",
+        "peso_prom_kg": 430.0,
+        "precio_bs_kg": 18.4,
+        "cantidad": 1
+      }
+    },
+    {
+      "lote": 487,
+      "motivo": "raza_invalida",
+      "motivo_texto": "Raza inválida",
+      "detalle": "raza 'Mestizo' no esta entre las aceptadas (Nelore, Brahman)",
+      "datos": {
+        "clase": "Vaca",
+        "sexo": "hembra",
+        "raza": "Mestizo",
+        "peso_prom_kg": 360.0,
+        "precio_bs_kg": 16.5,
+        "cantidad": 1
+      }
+    },
+    {
+      "lote": 489,
+      "motivo": "raza_invalida",
+      "motivo_texto": "Raza inválida",
+      "detalle": "raza 'Mestizo' no esta entre las aceptadas (Nelore, Brahman)",
+      "datos": {
+        "clase": "Vaquilla",
+        "sexo": "hembra",
+        "raza": "Mestizo",
+        "peso_prom_kg": 365.0,
+        "precio_bs_kg": 16.0,
+        "cantidad": 2
+      }
+    },
+    {
+      "lote": 490,
+      "motivo": "raza_invalida",
+      "motivo_texto": "Raza inválida",
+      "detalle": "raza 'Mestizo' no esta entre las aceptadas (Nelore, Brahman)",
+      "datos": {
+        "clase": "Novillo",
+        "sexo": "macho",
+        "raza": "Mestizo",
+        "peso_prom_kg": 415.0,
+        "precio_bs_kg": 18.0,
+        "cantidad": 1
+      }
+    },
+    {
+      "lote": 493,
+      "motivo": "raza_invalida",
+      "motivo_texto": "Raza inválida",
+      "detalle": "raza 'Mestizo' no esta entre las aceptadas (Nelore, Brahman)",
+      "datos": {
+        "clase": "Novillo",
+        "sexo": "macho",
+        "raza": "Mestizo",
+        "peso_prom_kg": 460.0,
+        "precio_bs_kg": 19.5,
+        "cantidad": 1
+      }
+    },
+    {
+      "lote": 497,
+      "motivo": "raza_invalida",
+      "motivo_texto": "Raza inválida",
+      "detalle": "raza 'Mestizo' no esta entre las aceptadas (Nelore, Brahman)",
+      "datos": {
+        "clase": "Vaca",
+        "sexo": "hembra",
+        "raza": "Mestizo",
+        "peso_prom_kg": 350.0,
+        "precio_bs_kg": 14.4,
+        "cantidad": 1
+      }
+    },
+    {
+      "lote": 499,
+      "motivo": "raza_invalida",
+      "motivo_texto": "Raza inválida",
+      "detalle": "raza 'Mestizo' no esta entre las aceptadas (Nelore, Brahman)",
+      "datos": {
+        "clase": "Vaca",
+        "sexo": "hembra",
+        "raza": "Mestizo",
+        "peso_prom_kg": 355.0,
+        "precio_bs_kg": 15.4,
+        "cantidad": 2
+      }
+    },
+    {
+      "lote": 902,
+      "motivo": "raza_invalida",
+      "motivo_texto": "Raza inválida",
+      "detalle": "raza 'Holando' no esta entre las aceptadas (Nelore, Brahman)",
+      "datos": {
+        "clase": "Vaca",
+        "sexo": "hembra",
+        "raza": "Holando",
+        "peso_prom_kg": 227.9,
+        "precio_bs_kg": 12.4,
+        "cantidad": 1
+      }
+    },
+    {
+      "lote": 922,
+      "motivo": "raza_invalida",
+      "motivo_texto": "Raza inválida",
+      "detalle": "raza 'Mediterranea' no esta entre las aceptadas (Nelore, Brahman)",
+      "datos": {
+        "clase": "Butorete",
+        "sexo": "macho",
+        "raza": "Mediterranea",
+        "peso_prom_kg": 175.0,
+        "precio_bs_kg": 18.5,
+        "cantidad": 6
+      }
+    },
+    {
+      "lote": 924,
+      "motivo": "raza_invalida",
+      "motivo_texto": "Raza inválida",
+      "detalle": "raza 'Mediterranea' no esta entre las aceptadas (Nelore, Brahman)",
+      "datos": {
+        "clase": "Butorete",
+        "sexo": "macho",
+        "raza": "Mediterranea",
+        "peso_prom_kg": 175.0,
+        "precio_bs_kg": 18.2,
+        "cantidad": 5
+      }
+    }
+  ],
+  "conflictos_clase_vs_peso": [
+    {
+      "lote": 418,
+      "clase_leida": "Vaquilla",
+      "categoria_asignada": "Ternera",
+      "peso_kg": 115.71
+    },
+    {
+      "lote": 422,
+      "clase_leida": "Toro",
+      "categoria_asignada": "Destete Machos",
+      "peso_kg": 194.0
+    },
+    {
+      "lote": 424,
+      "clase_leida": "Toro",
+      "categoria_asignada": "Destete Machos",
+      "peso_kg": 187.27
+    },
+    {
+      "lote": 429,
+      "clase_leida": "Toro",
+      "categoria_asignada": "Destete Machos",
+      "peso_kg": 174.0
+    },
+    {
+      "lote": 430,
+      "clase_leida": "Toro",
+      "categoria_asignada": "Torillos para Engorde",
+      "peso_kg": 389.48
+    },
+    {
+      "lote": 437,
+      "clase_leida": "Toro",
+      "categoria_asignada": "Ternero",
+      "peso_kg": 122.5
+    },
+    {
+      "lote": 468,
+      "clase_leida": "Vaquillona",
+      "categoria_asignada": "Ternera",
+      "peso_kg": 107.5
+    },
+    {
+      "lote": 470,
+      "clase_leida": "Toro",
+      "categoria_asignada": "Ternero",
+      "peso_kg": 127.5
+    }
+  ]
+}

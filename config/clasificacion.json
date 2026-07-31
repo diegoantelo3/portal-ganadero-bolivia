@@ -1,0 +1,243 @@
+{
+  "_doc": [
+    "UNICA fuente de verdad del motor de clasificacion.",
+    "Para agregar/quitar categorias, razas o tipos de remate se edita SOLO este archivo.",
+    "Ningun rango de peso ni nombre de categoria debe existir en el codigo ni en el HTML.",
+    "",
+    "Convencion de rangos: 'desde_kg' es INCLUSIVO y 'hasta_kg' es EXCLUSIVO.",
+    "Asi los tramos quedan contiguos y sin huecos (un animal de 130,5 kg cae en Ternero).",
+    "'hasta_kg': null significa 'en adelante'."
+  ],
+  "version": 2,
+
+  "peso": {
+    "min_kg": 50,
+    "max_kg": 900,
+    "_doc": "Fuera de este rango el lote se descarta (motivo: peso_fuera_de_rango)."
+  },
+
+  "razas_aceptadas": [
+    {
+      "canonica": "Nelore",
+      "patrones": ["nelore", "nelor", "nellore", "neiore", "nelorе", "neloree", "nlore", "neore"]
+    },
+    {
+      "canonica": "Brahman",
+      "patrones": ["brahman", "brahma", "braman", "brahaman", "bramhan", "brhaman", "brahmn"]
+    }
+  ],
+  "_doc_razas": [
+    "Se acepta el lote si el texto de raza CONTIENE alguno de los patrones (tras normalizar).",
+    "Eso cubre cruces ('Nelore x Brahman'), sufijos ('Nelore SIN PRENEZ') y derivados",
+    "('Anelorado' contiene 'nelor'). Cualquier otra raza se descarta."
+  ],
+
+  "sexo": {
+    "macho": ["macho", "machos", "m"],
+    "hembra": ["hembra", "hembras", "h", "f"],
+    "_doc": "Si no se resuelve a exactamente uno de los dos, se descarta. No se adivina."
+  },
+
+  "mixto": {
+    "patrones": [
+      "mixto", "mixtos", "mixta", "mixtas",
+      "machosyhembras", "hembrasymachos",
+      "surtido", "surtidos", "variado", "ambossexos"
+    ],
+    "_doc": "Si la clase, el sexo o la raza contienen alguno de estos patrones, el lote se descarta."
+  },
+
+  "tipos_remate": {
+    "INVERNO": {
+      "etiqueta": "Inverno",
+      "patrones_titulo": ["inverno", "invernada"]
+    },
+    "CONSUMO": {
+      "etiqueta": "Consumo",
+      "patrones_titulo": ["consumo", "gordo", "faena"]
+    },
+    "COMPLEMENTARIOS": {
+      "etiqueta": "Complementarios",
+      "patrones_titulo": ["complementario", "complementarios", "comercial", "general"]
+    }
+  },
+  "tipo_remate_por_defecto": "COMPLEMENTARIOS",
+  "_doc_remate": [
+    "Se detecta por palabras clave en el titulo del video. FERCOGAN publica sus remates",
+    "como 'REMATE COMERCIAL', que mapea a COMPLEMENTARIOS: habilita las 12 categorias,",
+    "que es lo correcto para un remate comercial mixto.",
+    "En COMPLEMENTARIOS la clase NUNCA se usa para decidir: manda el peso (igual que en el resto)."
+  ],
+
+  "categorias": [
+    {
+      "id": "ternero",
+      "nombre": "Ternero",
+      "sexo": "macho",
+      "desde_kg": 0,
+      "hasta_kg": 131,
+      "remates": ["INVERNO", "COMPLEMENTARIOS"],
+      "subtitulo": "macho · hasta 130 kg",
+      "etiqueta_corta": "Ternero",
+      "etiqueta_estimador": "Ternero (macho)",
+      "clases_esperadas": ["ternero", "terneros"]
+    },
+    {
+      "id": "destete_machos",
+      "nombre": "Destete Machos",
+      "sexo": "macho",
+      "desde_kg": 131,
+      "hasta_kg": 221,
+      "remates": ["INVERNO", "COMPLEMENTARIOS"],
+      "subtitulo": "macho · 131–220 kg",
+      "etiqueta_corta": "Destete M.",
+      "etiqueta_estimador": "Destete Machos",
+      "clases_esperadas": ["ternero", "terneros", "destete", "torillo", "torillos"]
+    },
+    {
+      "id": "torillos_recria",
+      "nombre": "Torillos Recría",
+      "sexo": "macho",
+      "desde_kg": 221,
+      "hasta_kg": 301,
+      "remates": ["INVERNO", "COMPLEMENTARIOS"],
+      "subtitulo": "macho · 221–300 kg",
+      "etiqueta_corta": "Tor. recría",
+      "etiqueta_estimador": "Torillos Recría",
+      "clases_esperadas": ["torillo", "torillos", "torete", "toretes", "novillito", "novillitos"]
+    },
+    {
+      "id": "torillos_engorde",
+      "nombre": "Torillos para Engorde",
+      "sexo": "macho",
+      "desde_kg": 301,
+      "hasta_kg": 401,
+      "remates": ["INVERNO", "COMPLEMENTARIOS"],
+      "subtitulo": "macho · 301–400 kg",
+      "etiqueta_corta": "Tor. engorde",
+      "etiqueta_estimador": "Torillos para Engorde",
+      "clases_esperadas": ["torillo", "torillos", "torete", "toretes", "novillo", "novillos"]
+    },
+    {
+      "id": "torillos",
+      "nombre": "Torillos",
+      "sexo": "macho",
+      "desde_kg": 401,
+      "hasta_kg": 521,
+      "remates": ["CONSUMO", "COMPLEMENTARIOS"],
+      "subtitulo": "macho · 401–520 kg",
+      "etiqueta_corta": "Torillos",
+      "etiqueta_estimador": "Torillos",
+      "clases_esperadas": ["torillo", "torillos", "novillo", "novillos", "toro", "toros"]
+    },
+    {
+      "id": "toros_gordos",
+      "nombre": "Toros Gordos",
+      "sexo": "macho",
+      "desde_kg": 521,
+      "hasta_kg": null,
+      "remates": ["CONSUMO", "COMPLEMENTARIOS"],
+      "subtitulo": "macho · 521 kg en adelante",
+      "etiqueta_corta": "Toros gordos",
+      "etiqueta_estimador": "Toros Gordos",
+      "clases_esperadas": ["toro", "toros", "novillo", "novillos"]
+    },
+
+    {
+      "id": "ternera",
+      "nombre": "Ternera",
+      "sexo": "hembra",
+      "desde_kg": 0,
+      "hasta_kg": 131,
+      "remates": ["INVERNO", "COMPLEMENTARIOS"],
+      "subtitulo": "hembra · hasta 130 kg",
+      "etiqueta_corta": "Ternera",
+      "etiqueta_estimador": "Ternera (hembra)",
+      "clases_esperadas": ["ternera", "terneras"]
+    },
+    {
+      "id": "destete_hembras",
+      "nombre": "Destete Hembras",
+      "sexo": "hembra",
+      "desde_kg": 131,
+      "hasta_kg": 211,
+      "remates": ["INVERNO", "COMPLEMENTARIOS"],
+      "subtitulo": "hembra · 131–210 kg",
+      "etiqueta_corta": "Destete H.",
+      "etiqueta_estimador": "Destete Hembras",
+      "clases_esperadas": ["ternera", "terneras", "destete", "vaquilla", "vaquillas"]
+    },
+    {
+      "id": "vaquillas_recria",
+      "nombre": "Vaquillas Recría",
+      "sexo": "hembra",
+      "desde_kg": 211,
+      "hasta_kg": 271,
+      "remates": ["INVERNO", "COMPLEMENTARIOS"],
+      "subtitulo": "hembra · 211–270 kg",
+      "etiqueta_corta": "Vaq. recría",
+      "etiqueta_estimador": "Vaquillas Recría",
+      "clases_esperadas": ["vaquilla", "vaquillas", "vaquillona", "vaquillonas"]
+    },
+    {
+      "id": "vaquillas_reposicion",
+      "nombre": "Vaquillas Reposición",
+      "sexo": "hembra",
+      "desde_kg": 271,
+      "hasta_kg": 321,
+      "remates": ["INVERNO", "COMPLEMENTARIOS"],
+      "subtitulo": "hembra · 271–320 kg",
+      "etiqueta_corta": "Vaq. repos.",
+      "etiqueta_estimador": "Vaquillas Reposición",
+      "clases_esperadas": ["vaquilla", "vaquillas", "vaquillona", "vaquillonas"]
+    },
+    {
+      "id": "vaquillas",
+      "nombre": "Vaquillas",
+      "sexo": "hembra",
+      "desde_kg": 321,
+      "hasta_kg": 431,
+      "remates": ["CONSUMO", "COMPLEMENTARIOS"],
+      "subtitulo": "hembra · 321–430 kg",
+      "etiqueta_corta": "Vaquillas",
+      "etiqueta_estimador": "Vaquillas",
+      "clases_esperadas": ["vaquilla", "vaquillas", "vaquillona", "vaquillonas", "vaca", "vacas"]
+    },
+    {
+      "id": "vacas",
+      "nombre": "Vacas",
+      "sexo": "hembra",
+      "desde_kg": 431,
+      "hasta_kg": null,
+      "remates": ["CONSUMO", "COMPLEMENTARIOS"],
+      "subtitulo": "hembra · 431 kg en adelante",
+      "etiqueta_corta": "Vacas",
+      "etiqueta_estimador": "Vacas",
+      "clases_esperadas": ["vaca", "vacas", "vaquillona", "vaquillonas"]
+    }
+  ],
+
+  "estimador": {
+    "peso_min_kg": 50,
+    "peso_max_kg": 900,
+    "peso_paso_kg": 10,
+    "peso_inicial_kg": 300
+  },
+
+  "motivos_descarte": {
+    "peso_inexistente": "Peso inexistente",
+    "peso_fuera_de_rango": "Peso fuera de rango",
+    "sexo_inexistente": "Sexo inexistente",
+    "raza_invalida": "Raza inválida",
+    "lote_mixto": "Lote mixto",
+    "ocr_critico": "Error OCR crítico",
+    "sin_categoria": "Sin categoría para ese peso en este tipo de remate",
+    "precio_invalido": "Precio inexistente o fuera de rango"
+  },
+
+  "precio": {
+    "min_bs_kg": 5,
+    "max_bs_kg": 45,
+    "_doc": "Guarda de sanidad: un precio de cierre fuera de este rango es una lectura dudosa."
+  }
+}

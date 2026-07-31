@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Arma el portal (index.html) a partir de template.html + data/remate_actual.json.
+Capa de PRESENTACION: arma index.html a partir de template.html.
+
+Esta capa no decide nada de negocio. No conoce categorias, ni rangos de peso,
+ni razas, ni reglas de descarte: todo eso lo resuelve `engine/` leyendo
+`config/clasificacion.json`. Aca solo se formatea y se inyecta en el HTML.
 
 Uso:
     python build_site.py
@@ -10,27 +14,18 @@ Uso:
 import json
 import os
 
+from engine import cargar_config, procesar_remate
+from engine.stats import resumen_general
+
 MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun",
          "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
 
-# Las 6 categorias del portal, en el orden en que se muestran (Machos / Hembras)
-CATS = [
-    ("Ternero",           "macho de destete · 150–230 kg"),
-    ("Macho de recría",   "torillo / novillo · 220–350 kg"),
-    ("Toro / novillo gordo", "terminado · 380+ kg"),
-    ("Ternera",           "hembra de destete · 150–230 kg"),
-    ("Hembra de recría",  "vaquilla / vaquillona · 240–440 kg"),
-    ("Vaca gorda",        "terminada · 330–465 kg"),
-]
-MACHOS = {"Ternero", "Macho de recría", "Toro / novillo gordo"}
-LABEL_CORTO = {
-    "Ternero": "Ternero", "Macho de recría": "M. recría",
-    "Toro / novillo gordo": "Toro", "Ternera": "Ternera",
-    "Hembra de recría": "H. recría", "Vaca gorda": "Vaca gorda",
-}
-
 HERE = os.path.dirname(os.path.abspath(__file__))
 
+
+# ---------------------------------------------------------------------------
+# Formato
+# ---------------------------------------------------------------------------
 
 def fmt_bs(v):
     return f"{v:,.2f}".replace(",", "_").replace(".", ",").replace("_", ".")
@@ -55,34 +50,26 @@ def video_url_con_tiempo(base_url, segundos):
     return f"{base_url}{sep}t={int(segundos)}s"
 
 
-def categoria_stats(lots):
-    """Agrupa lotes por categoria_portal y calcula promedio/cantidad."""
-    stats = {}
-    for nombre, _ in CATS:
-        en_cat = [l for l in lots if l.get("categoria_portal") == nombre]
-        if en_cat:
-            precios = [float(l["precio_bs_kg"]) for l in en_cat]
-            stats[nombre] = {
-                "precio": round(sum(precios) / len(precios), 2),
-                "n_lotes": len(en_cat),
-            }
-        else:
-            stats[nombre] = None
-    return stats
+def esc(texto):
+    """Escape minimo para inyectar texto en HTML."""
+    return (str(texto or "")
+            .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            .replace('"', "&quot;"))
 
 
-def render_cat_cards(stats, grupo_machos):
+# ---------------------------------------------------------------------------
+# Render (todo se deriva de la configuracion, nada esta hardcodeado aca)
+# ---------------------------------------------------------------------------
+
+def render_cat_cards(stats, categorias):
     out = []
-    for nombre, subt in CATS:
-        es_macho = nombre in MACHOS
-        if es_macho != grupo_machos:
-            continue
-        s = stats[nombre]
+    for cat in categorias:
+        s = stats.get(cat.id)
         if s is None:
             out.append(
                 f'      <div class="catcard nodata">\n'
-                f'        <div class="cn">{nombre}</div>\n'
-                f'        <div class="cw">{subt}</div>\n'
+                f'        <div class="cn">{esc(cat.nombre)}</div>\n'
+                f'        <div class="cw">{esc(cat.subtitulo)}</div>\n'
                 f'        <div class="cp">Sin datos aún</div>\n'
                 f'        <div class="cm" style="color:var(--ink-mut)">No apareció en este remate</div>\n'
                 f'      </div>'
@@ -91,84 +78,105 @@ def render_cat_cards(stats, grupo_machos):
             plural = "lotes" if s["n_lotes"] != 1 else "lote"
             out.append(
                 f'      <div class="catcard">\n'
-                f'        <div class="cn">{nombre}</div>\n'
-                f'        <div class="cw">{subt}</div>\n'
-                f'        <div class="cp">Bs {fmt_bs(s["precio"])}<small> /kg</small></div>\n'
-                f'        <div class="cm">{s["n_lotes"]} {plural} en el remate</div>\n'
+                f'        <div class="cn">{esc(cat.nombre)}</div>\n'
+                f'        <div class="cw">{esc(cat.subtitulo)}</div>\n'
+                f'        <div class="cp">Bs {fmt_bs(s["precio_bs_kg"])}<small> /kg</small></div>\n'
+                f'        <div class="cm">{s["n_lotes"]} {plural} · {s["n_cabezas"]} cabezas</div>\n'
                 f'      </div>'
             )
     return "\n".join(out)
 
 
-def render_estimator_options(stats):
-    labels = {
-        "Ternero": "Ternero (macho)",
-        "Macho de recría": "Macho de recría",
-        "Toro / novillo gordo": "Toro / novillo gordo",
-        "Ternera": "Ternera (hembra)",
-        "Hembra de recría": "Hembra de recría (vaquilla)",
-        "Vaca gorda": "Vaca gorda",
-    }
+def render_estimator_options(stats, categorias):
     out = []
-    primero_con_datos = next((n for n, _ in CATS if stats[n]), None)
-    for nombre, _ in CATS:
-        s = stats[nombre]
+    primero = next((c.id for c in categorias if stats.get(c.id)), None)
+    for cat in categorias:
+        s = stats.get(cat.id)
+        etiqueta = esc(cat.etiqueta_estimador)
         if s is None:
-            out.append(f'            <option value="">{labels[nombre]} (sin datos aún)</option>')
+            out.append(f'            <option value="">{etiqueta} (sin datos aún)</option>')
         else:
-            sel = " selected" if nombre == primero_con_datos else ""
-            out.append(f'            <option value="{s["precio"]:.2f}"{sel}>{labels[nombre]}</option>')
+            sel = " selected" if cat.id == primero else ""
+            out.append(
+                f'            <option value="{s["precio_bs_kg"]:.2f}"{sel}>{etiqueta}</option>')
     return "\n".join(out)
 
 
-def render_bars(stats):
-    con_datos = [(n, stats[n]["precio"]) for n, _ in CATS if stats[n]]
-    con_datos.sort(key=lambda t: -t[1])
+def render_bars(stats, categorias):
+    con_datos = [(c, stats[c.id]) for c in categorias if stats.get(c.id)]
+    con_datos.sort(key=lambda t: -t[1]["precio_bs_kg"])
     out = []
-    for nombre, precio in con_datos:
+    for cat, s in con_datos:
+        precio = s["precio_bs_kg"]
         out.append(
             f'          <div class="bar-col"><div class="bar-val">{fmt_bs(precio)}</div>'
             f'<div class="bar" data-v="{precio:.2f}"></div><div class="bar-base"></div>'
-            f'<div class="bar-lote">{LABEL_CORTO[nombre]}</div></div>'
+            f'<div class="bar-lote">{esc(cat.etiqueta_corta)}</div></div>'
         )
     return "\n".join(out)
 
 
-def build():
+# ---------------------------------------------------------------------------
+# Build
+# ---------------------------------------------------------------------------
+
+def build(guardar_auditoria=True):
+    cfg = cargar_config()
+
     with open(os.path.join(HERE, "data", "remate_actual.json"), encoding="utf-8") as f:
         remate = json.load(f)
 
-    lots = remate["lots"]
     fecha_iso = remate["fecha"]
     video_url = remate.get("video_url", "")
     generado_el = remate.get("generado_el", fecha_iso)
+    titulo = remate.get("titulo_video", "")
 
-    stats = categoria_stats(lots)
-    con_datos = [n for n, _ in CATS if stats[n]]
-    precios_cat = [stats[n]["precio"] for n in con_datos]
+    # --- El motor hace TODO el trabajo de negocio ---
+    resultado = procesar_remate(
+        remate["lots"],
+        titulo_video=titulo,
+        tipo_remate=remate.get("tipo_remate"),   # permite forzarlo desde los datos
+        cfg=cfg,
+    )
+    stats = resultado.stats
+    clasificados = resultado.clasificados
+    resumen = resumen_general(clasificados)
 
-    total_lotes = len(lots)
-    total_cabezas = sum(int(l.get("cantidad") or 0) for l in lots)
-    lote_max = max(lots, key=lambda l: float(l["precio_bs_kg"]))
-    precio_max_desc = f'{lote_max.get("clase", "")} {lote_max.get("raza", "")} · Lote {lote_max.get("lote")}'.strip()
+    if guardar_auditoria:
+        ruta = os.path.join(HERE, "data", "auditoria", f"auditoria_{fecha_iso}.json")
+        resultado.auditoria.guardar(ruta)
 
+    if not clasificados:
+        raise SystemExit(
+            "No quedo ningun lote publicable tras aplicar las reglas. "
+            "Revisa data/auditoria/ para ver los motivos. No se toca index.html.")
+
+    # Categorias que corresponde mostrar para este tipo de remate
+    cats_visibles = cfg.categorias_visibles(resultado.tipo_remate)
+    cats_machos = [c for c in cats_visibles if c.sexo == "macho"]
+    cats_hembras = [c for c in cats_visibles if c.sexo == "hembra"]
+
+    con_datos = [c for c in cats_visibles if stats.get(c.id)]
+    precios_cat = [stats[c.id]["precio_bs_kg"] for c in con_datos]
     spread = round(max(precios_cat) - min(precios_cat), 2) if precios_cat else 0
     bar_max = round(max(precios_cat) * 1.15, 2) if precios_cat else 30
 
-    lots_js = []
-    for l in lots:
-        lots_js.append({
-            "lote": l.get("lote"),
-            "cat": l.get("clase") or "",
-            "raza": l.get("raza") or "",
-            "edad": l.get("edad") or "",
-            "cab": int(l.get("cantidad") or 0),
-            "peso": float(l.get("peso_prom_kg") or 0),
-            "pk": float(l.get("precio_bs_kg") or 0),
-            "url": video_url_con_tiempo(video_url, l.get("segundo_video")),
-        })
-    lots_js.sort(key=lambda d: d["lote"] or 0)
+    top = resumen["lote_precio_max"]
+    precio_max_desc = f"{top.categoria} {top.raza} · Lote {top.lote}"
 
+    # Tabla de detalle: se muestran los lotes YA CLASIFICADOS
+    lots_js = [{
+        "lote": lc.lote,
+        "cat": lc.categoria,
+        "raza": lc.raza,
+        "edad": lc.crudo.get("edad") or "",
+        "cab": lc.cantidad,
+        "peso": lc.peso_kg,
+        "pk": lc.precio_bs_kg,
+        "url": video_url_con_tiempo(video_url, lc.crudo.get("segundo_video")),
+    } for lc in sorted(clasificados, key=lambda l: l.lote or 0)]
+
+    est = cfg.estimador
     with open(os.path.join(HERE, "template.html"), encoding="utf-8") as f:
         html = f.read()
 
@@ -176,29 +184,36 @@ def build():
         "{{FECHA_SLASH}}": fecha_slash(fecha_iso),
         "{{FECHA_CORTA}}": fecha_corta(fecha_iso),
         "{{FECHA_GENERACION}}": fecha_corta(generado_el[:10]) if generado_el else fecha_corta(fecha_iso),
-        "{{PRECIO_MAX}}": fmt_bs(float(lote_max["precio_bs_kg"])),
-        "{{PRECIO_MAX_DESC}}": precio_max_desc,
-        "{{LOTES_VENDIDOS}}": str(total_lotes),
+        "{{PRECIO_MAX}}": fmt_bs(resumen["precio_max"]),
+        "{{PRECIO_MAX_DESC}}": esc(precio_max_desc),
+        "{{LOTES_VENDIDOS}}": str(resumen["n_lotes"]),
         "{{CATEGORIAS_CON_DATOS}}": str(len(con_datos)),
-        "{{CABEZAS_TOTAL}}": str(total_cabezas),
+        "{{CABEZAS_TOTAL}}": str(resumen["n_cabezas"]),
         "{{SPREAD_BS}}": fmt_bs(spread),
-        "{{VIDEO_URL}}": video_url or "https://www.youtube.com/@FERCOGANvirtual",
+        "{{VIDEO_URL}}": esc(video_url or "https://www.youtube.com/@FERCOGANvirtual"),
         "{{BAR_MAX}}": f"{bar_max:.2f}",
         "{{LOTS_JSON}}": json.dumps(lots_js, ensure_ascii=False),
-        "<!--CATS_MACHOS-->": render_cat_cards(stats, True),
-        "<!--CATS_HEMBRAS-->": render_cat_cards(stats, False),
-        "<!--EST_OPTIONS-->": render_estimator_options(stats),
-        "<!--BARS-->": render_bars(stats),
+        "{{EST_PESO_MIN}}": f"{est.get('peso_min_kg', 50):.0f}",
+        "{{EST_PESO_MAX}}": f"{est.get('peso_max_kg', 900):.0f}",
+        "{{EST_PESO_PASO}}": f"{est.get('peso_paso_kg', 10):.0f}",
+        "{{EST_PESO_INICIAL}}": f"{est.get('peso_inicial_kg', 300):.0f}",
+        "<!--CATS_MACHOS-->": render_cat_cards(stats, cats_machos),
+        "<!--CATS_HEMBRAS-->": render_cat_cards(stats, cats_hembras),
+        "<!--EST_OPTIONS-->": render_estimator_options(stats, cats_visibles),
+        "<!--BARS-->": render_bars(stats, cats_visibles),
     }
 
     for token, valor in reemplazos.items():
         html = html.replace(token, valor)
 
-    out_path = os.path.join(HERE, "index.html")
-    with open(out_path, "w", encoding="utf-8") as f:
+    with open(os.path.join(HERE, "index.html"), "w", encoding="utf-8") as f:
         f.write(html)
-    print(f"· index.html generado a partir del remate del {fecha_slash(fecha_iso)} "
-          f"({total_lotes} lotes, {total_cabezas} cabezas).")
+
+    print(f"· index.html generado — remate del {fecha_slash(fecha_iso)} "
+          f"({resumen['n_lotes']} lotes, {resumen['n_cabezas']} cabezas, "
+          f"{len(con_datos)}/{len(cats_visibles)} categorias con datos).")
+    resultado.auditoria.imprimir(prefijo="  ")
+    return resultado
 
 
 if __name__ == "__main__":

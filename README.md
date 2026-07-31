@@ -33,19 +33,73 @@ algún día se contrata un proxy residencial (~US$3-15/mes).
 **Requisito:** la computadora tiene que estar prendida y con internet a la hora
 programada. Si estuvo apagada, la tarea corre en cuanto se enciende.
 
+## Arquitectura
+
+Tres capas, con una sola dirección de dependencia. La lógica de negocio está
+aislada: ni el extractor ni la interfaz conocen categorías, pesos ni razas.
+
+```
+config/clasificacion.json      ← ÚNICA fuente de verdad
+          │
+          ▼
+    engine/  ────────────────  LÓGICA DE NEGOCIO (sin I/O, testeable)
+          │
+    ┌─────┴─────┐
+    ▼           ▼
+motor_remate  build_site  ───  EXTRACCIÓN y PRESENTACIÓN
+                  │
+                  ▼
+            template.html  ──  INTERFAZ (sin reglas adentro)
+```
+
+### Para cambiar reglas de negocio, editá SOLO `config/clasificacion.json`
+
+| Querés cambiar… | Editás |
+|---|---|
+| Categorías, rangos de peso, etiquetas | `categorias[]` |
+| Razas aceptadas y tolerancia OCR | `razas_aceptadas[]` |
+| Rango de peso válido | `peso` |
+| Tipos de remate y su detección | `tipos_remate` |
+| Rango del estimador | `estimador` |
+
+No hace falta tocar una sola línea de Python. La configuración se **valida al
+arrancar**: si dejás un hueco o un solape entre rangos de peso, el sistema
+falla ahí mismo en vez de clasificar mal en silencio.
+
+### Pipeline de clasificación (`engine/pipeline.py`)
+
+Cada lote pasa por: OCR → precio → **peso** → sexo (y lote mixto) → raza →
+tipo de remate → **clasificación por peso** → clase como validación secundaria
+→ estadística ponderada → auditoría.
+
+**El peso siempre decide.** La clase que viene del cartel no es confiable y
+nunca elige categoría: si discrepa del peso, se registra como conflicto en la
+auditoría y se publica lo que dice el peso.
+
+**El precio promedio es ponderado por cabezas**, no simple: un lote de 20
+animales pesa 20 veces más que uno de 1 en la referencia.
+
 ## Archivos
 
 | Archivo | Qué hace |
 |---|---|
+| `config/clasificacion.json` | **Única fuente de verdad**: categorías, pesos, razas, remates, etiquetas. |
+| `engine/config.py` | Carga y **valida** la configuración (huecos, solapes, sexos). |
+| `engine/normalize.py` | Normalización OCR: razas, sexo, números, tipo de remate. |
+| `engine/pipeline.py` | Los 11 pasos del pipeline. Clasifica **por peso**. |
+| `engine/stats.py` | Promedio **ponderado por cabezas**. |
+| `engine/audit.py` | Registro de descartes y conflictos, con motivo. |
+| `tests/test_engine.py` | ~90 verificaciones. Correr con `python tests/test_engine.py`. |
 | `ACTUALIZAR-PORTAL.bat` | Lo que ejecuta el Programador de tareas. Doble clic para forzar una actualización. |
 | `automation/correr_local.py` | Corre el chequeo y publica los cambios (git push). Escribe `data/registro.log`. |
 | `automation/check_and_update.py` | Busca el remate nuevo en el canal y dispara el motor. |
-| `motor_remate.py` | Lee un video de remate de YouTube y extrae los lotes vendidos (IA de visión). |
-| `build_site.py` | Rellena `template.html` con `data/remate_actual.json` y escribe `index.html`. |
-| `template.html` | Diseño del portal con marcadores (`{{...}}`, `<!--...-->`) donde va cada dato. |
-| `data/remate_actual.json` | Datos del remate que se está mostrando ahora mismo. |
+| `motor_remate.py` | **Solo extrae**: video → filas crudas. No clasifica ni valida. |
+| `build_site.py` | **Solo presenta**: delega en `engine/` y rellena `template.html`. |
+| `template.html` | Diseño del portal con marcadores. Sin rangos ni categorías adentro. |
+| `data/remate_actual.json` | Datos crudos del remate que se está mostrando. |
 | `data/last_processed.json` | Qué video ya se procesó (para no repetirlo). |
 | `data/historial/` | Copia en CSV de cada remate procesado. |
+| `data/auditoria/` | Por remate: qué se descartó y por qué. |
 | `data/registro.log` | Qué pasó en cada corrida (no se sube a GitHub). |
 
 ## Configuración (una sola vez)

@@ -92,15 +92,21 @@ def main():
         "fecha": fecha,
         "video_url": ultimo["url"],
         "video_id": ultimo["id"],
+        # El titulo se guarda porque el motor detecta de ahi el tipo de remate
+        # (INVERNO / CONSUMO / COMPLEMENTARIOS).
+        "titulo_video": ultimo["title"],
         "generado_el": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "lots": filas,
     }
     with open(ACTUAL_PATH, "w", encoding="utf-8") as f:
         json.dump(remate_actual, f, ensure_ascii=False, indent=2)
 
-    build_site.build()
+    # build_site delega en engine/: valida, clasifica por peso, pondera por
+    # cabezas y deja la auditoria en data/auditoria/.
+    resultado = build_site.build()
     guardar_last_processed(ultimo["id"], fecha)
-    print(f"· Portal actualizado con el remate del {fecha} ({len(filas)} lotes).")
+    print(f"· Portal actualizado con el remate del {fecha} "
+          f"({len(resultado.clasificados)} lotes publicados de {len(filas)} leidos).")
 
 
 if __name__ == "__main__":
