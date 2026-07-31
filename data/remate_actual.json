@@ -3,7 +3,7 @@
   "video_url": "https://www.youtube.com/watch?v=haEa9Z6LQFA",
   "video_id": "haEa9Z6LQFA",
   "titulo_video": "REMATE COMERCIAL FERCOGAN SRL 30/07/2026",
-  "generado_el": "2026-07-31T15:54:05+00:00",
+  "generado_el": "2026-07-31T23:30:56+00:00",
   "lots": [
     {
       "lote": 401,
@@ -12,7 +12,7 @@
       "sexo": "hembra",
       "edad": "3 Años",
       "raza": "Brahman SIN PRENEZ",
-      "peso_prom_kg": 422.73,
+      "peso_prom_kg": 422.5,
       "precio_bs_kg": 20.7,
       "subtotal_bs": 8833.21,
       "total_bs": 45263.66,
@@ -26,7 +26,7 @@
       "sexo": "hembra",
       "edad": "5 Años",
       "raza": "Brahman SIN PRENEZ",
-      "peso_prom_kg": 440.0,
+      "peso_prom_kg": 440,
       "precio_bs_kg": 17,
       "subtotal_bs": 7544.8,
       "total_bs": 37774.0,
@@ -42,7 +42,7 @@
       "raza": "Nelore",
       "peso_prom_kg": 405.0,
       "precio_bs_kg": 18.5,
-      "subtotal_bs": 7567.43,
+      "subtotal_bs": 7587.43,
       "total_bs": 45404.55,
       "procedencia": "CUATRO CAÑADAS",
       "segundo_video": 4760
@@ -84,7 +84,7 @@
       "raza": "Nelore",
       "peso_prom_kg": 115.71,
       "precio_bs_kg": 17.0,
-      "subtotal_bs": 1972.74,
+      "subtotal_bs": 1872.74,
       "total_bs": 49964.7,
       "procedencia": "CUATRO CAÑADAS",
       "segundo_video": 5710
@@ -124,9 +124,9 @@
       "sexo": "macho",
       "edad": "3 Años",
       "raza": "Nelore",
-      "peso_prom_kg": 422.5,
+      "peso_prom_kg": 174.0,
       "precio_bs_kg": 20.5,
-      "subtotal_bs": 8814.17,
+      "subtotal_bs": 9814.17,
       "total_bs": 147212.55,
       "procedencia": "PAILON SUR",
       "segundo_video": 7960
@@ -253,7 +253,7 @@
       "peso_prom_kg": 232.65,
       "precio_bs_kg": 24.5,
       "subtotal_bs": 5833.32,
-      "total_bs": 5893.45,
+      "total_bs": 5883.45,
       "procedencia": "GUARAYOS",
       "segundo_video": 10885
     },
@@ -280,7 +280,7 @@
       "raza": "Nelore",
       "peso_prom_kg": 127.5,
       "precio_bs_kg": 20.9,
-      "subtotal_bs": 9024.1,
+      "subtotal_bs": 8024.1,
       "total_bs": 80240.98,
       "procedencia": "PAILON SUR",
       "segundo_video": 8360
@@ -306,7 +306,7 @@
       "sexo": "hembra",
       "edad": "2.5 Años",
       "raza": "Mestizo",
-      "peso_prom_kg": 315.0,
+      "peso_prom_kg": 315,
       "precio_bs_kg": 17.1,
       "subtotal_bs": 5521.16,
       "total_bs": null,
@@ -328,13 +328,27 @@
       "segundo_video": 685
     },
     {
+      "lote": 484,
+      "cantidad": 2,
+      "clase": "Vaquillona",
+      "sexo": "hembra",
+      "edad": "4 Años",
+      "raza": "Nelore",
+      "peso_prom_kg": 377.5,
+      "precio_bs_kg": 20.7,
+      "subtotal_bs": 7886.94,
+      "total_bs": 52999.24,
+      "procedencia": "GUARAYOS",
+      "segundo_video": 560
+    },
+    {
       "lote": 487,
       "cantidad": 1,
       "clase": "Vaca",
       "sexo": "hembra",
       "edad": "5 Años",
       "raza": "Mestizo",
-      "peso_prom_kg": 360,
+      "peso_prom_kg": 360.0,
       "precio_bs_kg": 16.5,
       "subtotal_bs": 6088.5,
       "total_bs": 6088.5,
@@ -376,7 +390,7 @@
       "sexo": "macho",
       "edad": "4 Años",
       "raza": "Mestizo",
-      "peso_prom_kg": 460.0,
+      "peso_prom_kg": 460,
       "precio_bs_kg": 19.5,
       "subtotal_bs": 9194.25,
       "total_bs": null,
@@ -390,10 +404,10 @@
       "sexo": "hembra",
       "edad": "5 Años",
       "raza": "Mestizo",
-      "peso_prom_kg": 350.0,
+      "peso_prom_kg": 350,
       "precio_bs_kg": 14.4,
-      "subtotal_bs": 5166.0,
-      "total_bs": 5166.0,
+      "subtotal_bs": 5166,
+      "total_bs": 5166,
       "procedencia": "GUARAYOS",
       "segundo_video": 185
     },
@@ -421,7 +435,7 @@
       "peso_prom_kg": 490.0,
       "precio_bs_kg": 12.4,
       "subtotal_bs": 6227.9,
-      "total_bs": 6227.9,
+      "total_bs": null,
       "procedencia": "LA GUARDIA",
       "segundo_video": 1235
     },
@@ -436,7 +450,7 @@
       "precio_bs_kg": 19,
       "subtotal_bs": 8861.13,
       "total_bs": 8861.12,
-      "procedencia": "ROBORÉ",
+      "procedencia": "ROBORE",
       "segundo_video": 1035
     },
     {
@@ -449,7 +463,7 @@
       "peso_prom_kg": 390.0,
       "precio_bs_kg": 18.8,
       "subtotal_bs": 7405.32,
-      "total_bs": 22215.96,
+      "total_bs": 22215.98,
       "procedencia": "SAN JOSÉ DE CH.",
       "segundo_video": 2535
     },
@@ -462,7 +476,7 @@
       "raza": "Nelore",
       "peso_prom_kg": 563.33,
       "precio_bs_kg": 19.5,
-      "subtotal_bs": 11084.28,
+      "subtotal_bs": 11094.28,
       "total_bs": 33284.55,
       "procedencia": "S. IGN.DE MOXOS",
       "segundo_video": 9610
@@ -476,7 +490,7 @@
       "raza": "Mediterranea",
       "peso_prom_kg": 175.0,
       "precio_bs_kg": 18.5,
-      "subtotal_bs": 3252.25,
+      "subtotal_bs": 8875.38,
       "total_bs": 53252.25,
       "procedencia": "PAILON SUR",
       "segundo_video": 9435
@@ -490,7 +504,7 @@
       "raza": "Mediterranea",
       "peso_prom_kg": 175.0,
       "precio_bs_kg": 18.2,
-      "subtotal_bs": 3213.45,
+      "subtotal_bs": 3231.45,
       "total_bs": 43657.25,
       "procedencia": "PAILON SUR",
       "segundo_video": 9310
@@ -504,7 +518,7 @@
       "raza": "Nelore",
       "peso_prom_kg": 527.0,
       "precio_bs_kg": 19.5,
-      "subtotal_bs": 10576.22,
+      "subtotal_bs": 10576.29,
       "total_bs": 52881.08,
       "procedencia": "CUATRO CAÑADAS",
       "segundo_video": 6510

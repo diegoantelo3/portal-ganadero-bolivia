@@ -242,6 +242,26 @@
     "_doc": "Guarda de sanidad: un precio de cierre fuera de este rango es una lectura dudosa."
   },
 
+  "extraccion": {
+    "modelo_lectura": "claude-haiku-4-5-20251001",
+    "modelo_repaso": "claude-opus-5",
+    "repaso_activo": true,
+    "_doc": [
+      "Lectura en dos pasadas.",
+      "",
+      "La primera lee TODOS los carteles con un modelo rapido y barato.",
+      "Despues se aplica el control de coherencia del cartel y SOLO los lotes",
+      "que no cierran se releen con un modelo mas capaz.",
+      "",
+      "Medido sobre el remate del 30/07/2026: fallan 10 de 109 fotogramas (9%).",
+      "Releer solo esos cuesta ~US$0,07 extra por remate (~US$1,65 al mes) en",
+      "lugar de ~US$0,65 extra si se usara el modelo caro para todo.",
+      "",
+      "Si el repaso tampoco logra un cartel coherente, el lote se descarta: el",
+      "control de integridad no se relaja nunca."
+    ]
+  },
+
   "cartel": {
     "comision": 0.01,
     "tolerancia_peso_pct": 2.0,

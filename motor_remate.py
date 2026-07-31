@@ -231,16 +231,23 @@ def read_lot_with_claude(jpeg_bytes, client, model):
     for intento in range(3):
         try:
             msg = client.messages.create(
-                model=model, max_tokens=400,
+                model=model, max_tokens=2000,
                 messages=[{"role": "user", "content": [
                     {"type": "image", "source": {"type": "base64",
                      "media_type": "image/jpeg", "data": b64}},
                     {"type": "text", "text": PROMPT},
                 ]}],
             )
-            txt = msg.content[0].text.strip()
+            # OJO: no se puede tomar content[0] a ciegas. Los modelos con
+            # razonamiento activo (Opus 5 lo trae por defecto) devuelven un
+            # bloque "thinking" ANTES del texto, y ese bloque no tiene .text.
+            txt = "".join(b.text for b in msg.content if getattr(b, "type", "") == "text").strip()
+            if not txt:
+                raise ValueError("la respuesta no trajo texto")
             # aislar el JSON aunque venga con texto alrededor
             i, j = txt.find("{"), txt.rfind("}")
+            if i < 0 or j < 0:
+                raise ValueError(f"la respuesta no trae JSON: {txt[:80]!r}")
             return json.loads(txt[i:j + 1])
         except Exception as e:
             if intento == 2:
@@ -268,7 +275,24 @@ def get_client(key: str = ""):
 # 4. Extraer los lotes vendidos de un video (reusable, sin CLI ni CSV)
 # --------------------------------------------------------------------------
 def extraer_lotes_vendidos(video_url, start=60, end=11700, step=25,
-                            model="claude-haiku-4-5-20251001", client=None):
+                            model=None, client=None):
+    """Lee el video en DOS pasadas.
+
+    1a pasada: todos los carteles con un modelo rapido y barato.
+    2a pasada: solo los lotes cuyo cartel no cierra su propia aritmetica se
+               releen con un modelo mas capaz.
+
+    El disparador de la segunda pasada es el mismo control de integridad que
+    usa engine/ para decidir si publica el lote, asi que no hay dos criterios
+    distintos de calidad dando vueltas. Que modelos se usan y si el repaso
+    esta activo se define en config/clasificacion.json.
+    """
+    from engine import cargar_config
+    from engine.pipeline import cartel_coherente
+
+    cfg = cargar_config()
+    model = model or cfg.modelo_lectura
+
     meta = get_video_meta(video_url)
     if meta["duration"]:
         end = min(end, max(start + 60, meta["duration"] - 20))
@@ -277,17 +301,13 @@ def extraer_lotes_vendidos(video_url, start=60, end=11700, step=25,
     lots = detect_lot_frames(stream, start, end, step)
 
     client = client or get_client()
-    print(f"· Leyendo {len(lots)} lotes con IA ({model})...")
+    print(f"· Pasada 1: leyendo {len(lots)} carteles con {model}...")
 
     # El unico filtro que aplica el EXTRACTOR es el de deduplicacion: el mismo
     # lote aparece en varios frames y hay que quedarse con el precio de cierre
-    # (el mas alto). Para eso necesita un rango de precio plausible, que toma
-    # de la misma configuracion que usa el motor de clasificacion -> no hay
-    # numeros duplicados entre este archivo y engine/.
-    from engine import cargar_config
-    cfg = cargar_config()
-
-    vendidos = {}
+    # (el mas alto). El rango de precio sale de la misma configuracion que usa
+    # el motor -> no hay numeros duplicados entre este archivo y engine/.
+    vendidos, frames = {}, {}
     for k, l in enumerate(lots):
         d = read_lot_with_claude(crop_to_jpeg(l["crop"]), client, model)
         if d.get("vacio") or not d.get("lote"):
@@ -306,8 +326,31 @@ def extraer_lotes_vendidos(video_url, start=60, end=11700, step=25,
         prev = vendidos.get(d["lote"])
         if prev is None or precio > (prev.get("precio_bs_kg") or 0):
             vendidos[d["lote"]] = d
+            frames[d["lote"]] = l["crop"]
         if (k + 1) % 20 == 0:
             print(f"  ... {k+1}/{len(lots)} frames procesados")
+
+    # ---- Pasada 2: releer solo los carteles que no cierran ----
+    if cfg.repaso_activo and cfg.modelo_repaso and cfg.modelo_repaso != model:
+        dudosos = [n for n, d in vendidos.items() if cartel_coherente(d, cfg) is False]
+        if dudosos:
+            print(f"· Pasada 2: {len(dudosos)} carteles no cierran su aritmetica; "
+                  f"releyendo con {cfg.modelo_repaso}...")
+            recuperados = 0
+            for n in sorted(dudosos):
+                crop = frames.get(n)
+                if crop is None:
+                    continue
+                d2 = read_lot_with_claude(crop_to_jpeg(crop, quality=95),
+                                          client, cfg.modelo_repaso)
+                if d2.get("vacio") or not d2.get("lote"):
+                    continue
+                if cartel_coherente(d2, cfg) is True:
+                    d2["segundo_video"] = vendidos[n]["segundo_video"]
+                    vendidos[n] = d2
+                    recuperados += 1
+                    print(f"    lote {n}: recuperado")
+            print(f"· Pasada 2: {recuperados} de {len(dudosos)} lotes recuperados.")
 
     filas = sorted(vendidos.values(), key=lambda x: x["lote"])
     print(f"· Lotes con precio de cierre extraidos: {len(filas)}")
@@ -337,7 +380,8 @@ def main():
     ap.add_argument("--start", type=int, default=60, help="Segundo inicial")
     ap.add_argument("--end", type=int, default=11700, help="Segundo final")
     ap.add_argument("--step", type=int, default=25, help="Segundos entre muestras")
-    ap.add_argument("--model", default="claude-haiku-4-5-20251001", help="Modelo de Claude para la vision")
+    ap.add_argument("--model", default=None,
+                    help="Modelo de vision para la 1a pasada (por defecto, el de config/clasificacion.json)")
     ap.add_argument("--no-api", action="store_true", help="Solo detecta y guarda frames (no llama a la API)")
     args = ap.parse_args()
 

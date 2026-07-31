@@ -1,13 +1,13 @@
 ﻿lote,cantidad,clase,sexo,edad,raza,peso_prom_kg,precio_bs_kg,subtotal_bs,total_bs,procedencia,segundo_video
-401,5,Vaquilla,hembra,3 Años,Brahman SIN PRENEZ,422.73,20.7,8833.21,45263.66,CABEZAS,4135
-405,5,Vaca,hembra,5 Años,Brahman SIN PRENEZ,440.0,17,7544.8,37774.0,CABEZAS,3585
-406,6,Vaquillona,hembra,4 Años,Nelore,405.0,18.5,7567.43,45404.55,CUATRO CAÑADAS,4760
+401,5,Vaquilla,hembra,3 Años,Brahman SIN PRENEZ,422.5,20.7,8833.21,45263.66,CABEZAS,4135
+405,5,Vaca,hembra,5 Años,Brahman SIN PRENEZ,440,17,7544.8,37774.0,CABEZAS,3585
+406,6,Vaquillona,hembra,4 Años,Nelore,405.0,18.5,7587.43,45404.55,CUATRO CAÑADAS,4760
 408,4,Vaquilla,hembra,3 Años,Nelore,137.5,17,2351.88,30047.5,PORONGO,4385
 416,7,Vaquilla,hembra,2 Años,Nelore,274.29,19.6,5429.84,38008.32,SAN JOSÉ DE CH.,5010
-418,7,Vaquilla,hembra,4 Años,Nelore,115.71,17.0,1972.74,49964.7,CUATRO CAÑADAS,5710
+418,7,Vaquilla,hembra,4 Años,Nelore,115.71,17.0,1872.74,49964.7,CUATRO CAÑADAS,5710
 422,10,Toro,macho,3 Años,Nelore,194,21.3,10622.42,106274.22,CABEZAS,7385
 424,11,Toro,macho,3 Años,Nelore,187.27,21.1,10384.21,114226.96,CABEZAS,7810
-429,15,Toro,macho,3 Años,Nelore,422.5,20.5,8814.17,147212.55,PAILON SUR,7960
+429,15,Toro,macho,3 Años,Nelore,174.0,20.5,9814.17,147212.55,PAILON SUR,7960
 430,7,Toro,macho,3 Años,Brahman,189.29,19,3389.48,65725.75,EL TORNO,6710
 435,20,Torillo,macho,2 Años,Nelore,382.5,22.5,8728.38,9567.5,PAILON SUR,10185
 437,6,Toro,macho,3 Años,Nelore,422.5,20.7,8833.21,52999.24,CABEZAS,8160
@@ -16,22 +16,23 @@
 451,6,Vaca,hembra,5 Años,Nelore,323.33,15.0,4898.45,29391.0,WARNES,2685
 460,2,Vaca,hembra,5 Años,Brahman,422.5,18.6,8064.96,16109.92,GUARAYOS,1785
 461,15,Ternero,macho,10 Meses,Nelore H. DE . T. REG.,166.33,28.5,4813.21,72529.65,MONTERO,11185
-464,17,Torillo,macho,2 Años,Anelorado,232.65,24.5,5833.32,5893.45,GUARAYOS,10885
+464,17,Torillo,macho,2 Años,Anelorado,232.65,24.5,5833.32,5883.45,GUARAYOS,10885
 468,6,Vaquillona,hembra,4 Años,Nelore,107.5,17,6896.78,41980.65,CUATRO CAÑADAS,6160
-470,10,Toro,macho,3 Años,Nelore,127.5,20.9,9024.1,80240.98,PAILON SUR,8360
+470,10,Toro,macho,3 Años,Nelore,127.5,20.9,8024.1,80240.98,PAILON SUR,8360
 476,1,Vaca,hembra,5 Años,Gvr,370.0,16.2,6143.85,,PORONGO,2385
-478,1,Vaquilla,hembra,2.5 Años,Mestizo,315.0,17.1,5521.16,,PORONGO,935
+478,1,Vaquilla,hembra,2.5 Años,Mestizo,315,17.1,5521.16,,PORONGO,935
 483,1,Vaquillona,hembra,4 Años,Gyr,430.0,18.4,8153.88,8153.88,GUARAYOS,685
-487,1,Vaca,hembra,5 Años,Mestizo,360,16.5,6088.5,6088.5,PORTACHUELO,810
+484,2,Vaquillona,hembra,4 Años,Nelore,377.5,20.7,7886.94,52999.24,GUARAYOS,560
+487,1,Vaca,hembra,5 Años,Mestizo,360.0,16.5,6088.5,6088.5,PORTACHUELO,810
 489,2,Vaquilla,hembra,3 Años,Mestizo,365.0,16,5986.0,11972.0,CABEZAS,2185
 490,1,Novillo,macho,4 Años,Mestizo,415.0,18,7656.75,7656.75,CABEZAS,2110
-493,1,Novillo,macho,4 Años,Mestizo,460.0,19.5,9194.25,,ANDRES IBAÑEZ,60
-497,1,Vaca,hembra,5 Años,Mestizo,350.0,14.4,5166.0,5166.0,GUARAYOS,185
+493,1,Novillo,macho,4 Años,Mestizo,460,19.5,9194.25,,ANDRES IBAÑEZ,60
+497,1,Vaca,hembra,5 Años,Mestizo,350,14.4,5166,5166,GUARAYOS,185
 499,2,Vaca,hembra,5 Años,Mestizo,355.0,15.4,5603.68,11207.35,SAN JAVIER,1485
-902,1,Vaca,hembra,5 Años,Holando,490.0,12.4,6227.9,6227.9,LA GUARDIA,1235
-907,1,Vaca,hembra,5 Años,Nelore,455,19,8861.13,8861.12,ROBORÉ,1035
-909,3,Vaquillona,hembra,4 Años,Nelore,390.0,18.8,7405.32,22215.96,SAN JOSÉ DE CH.,2535
-914,3,Toro,macho,5 Años,Nelore,563.33,19.5,11084.28,33284.55,S. IGN.DE MOXOS,9610
-922,6,Butorete,macho,2 Años,Mediterranea,175.0,18.5,3252.25,53252.25,PAILON SUR,9435
-924,5,Butorete,macho,2 Años,Mediterranea,175.0,18.2,3213.45,43657.25,PAILON SUR,9310
-930,5,Vaquillona,hembra,4 Años,Nelore,527.0,19.5,10576.22,52881.08,CUATRO CAÑADAS,6510
+902,1,Vaca,hembra,5 Años,Holando,490.0,12.4,6227.9,,LA GUARDIA,1235
+907,1,Vaca,hembra,5 Años,Nelore,455,19,8861.13,8861.12,ROBORE,1035
+909,3,Vaquillona,hembra,4 Años,Nelore,390.0,18.8,7405.32,22215.98,SAN JOSÉ DE CH.,2535
+914,3,Toro,macho,5 Años,Nelore,563.33,19.5,11094.28,33284.55,S. IGN.DE MOXOS,9610
+922,6,Butorete,macho,2 Años,Mediterranea,175.0,18.5,8875.38,53252.25,PAILON SUR,9435
+924,5,Butorete,macho,2 Años,Mediterranea,175.0,18.2,3231.45,43657.25,PAILON SUR,9310
+930,5,Vaquillona,hembra,4 Años,Nelore,527.0,19.5,10576.29,52881.08,CUATRO CAÑADAS,6510
