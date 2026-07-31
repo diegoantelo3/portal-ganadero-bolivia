@@ -35,8 +35,18 @@ def git(*args):
     return r.returncode, (r.stdout + r.stderr).strip()
 
 
+def asegurar_identidad_git():
+    """Sin identidad configurada, `git commit` falla. La fija solo en este repo."""
+    code, salida = git("config", "user.email")
+    if code != 0 or not salida.strip():
+        git("config", "user.name", "Portal Ganadero Bot")
+        git("config", "user.email", "diego.antelo3@gmail.com")
+        log("Identidad de git configurada en este repositorio.")
+
+
 def publicar():
     """Si hay cambios en el portal, los sube. Netlify republica solo."""
+    asegurar_identidad_git()
     code, salida = git("status", "--porcelain")
     if code != 0:
         log(f"ERROR git status: {salida}")

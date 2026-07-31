@@ -495,8 +495,9 @@
         `<td><span class="lote-n">${r.lote}</span></td>` +
         `<td><div class="cat-main">${r.cat} ${r.raza}</div><div class="cat-sub">${r.edad}</div></td>` +
         `<td class="num">${r.cab}</td>` +
-        `<td class="num">${fmt(r.peso)} kg</td>` +
-        `<td class="num">${fmt0(total)} kg</td>` +
+        // peso 0 = lectura descartada por dudosa; se muestra vacio en vez de "0 kg"
+        `<td class="num">${r.peso ? fmt(r.peso) + " kg" : "—"}</td>` +
+        `<td class="num">${r.peso ? fmt0(total) + " kg" : "—"}</td>` +
         `<td class="num price-cell">Bs ${fmt(r.pk)}/kg</td>` +
         `<td><a class="tc" href="${r.url || 'https://www.youtube.com/@FERCOGANvirtual'}" target="_blank" rel="noopener">ver ↗</a></td>`;
       tb.appendChild(tr);

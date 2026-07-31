@@ -199,13 +199,18 @@ Devuelve unicamente el JSON."""
 
 
 def categoria_portal(clase, sexo=None):
-    """Mapea la clase del cartel a una de las 6 categorias del portal."""
+    """Mapea la clase del cartel a una de las 6 categorias del portal.
+
+    Devuelve "" si la clase no corresponde a ninguna: eso pasa cuando la IA
+    lee mal el cartel (p.ej. "Butorete"), y esos lotes se descartan en vez de
+    inventar una categoria que el portal no tiene.
+    """
     c = (clase or "").lower()
     if "ternera" in c:
         return "Ternera"
     if "ternero" in c:
         return "Ternero"
-    if "torillo" in c or "novillito" in c:
+    if "torillo" in c or "novillito" in c or "torete" in c:
         return "Macho de recría"
     if "toro" in c or "novillo" in c:
         return "Toro / novillo gordo"
@@ -213,7 +218,21 @@ def categoria_portal(clase, sexo=None):
         return "Hembra de recría"
     if "vaca" in c:
         return "Vaca gorda"
-    return clase or ""
+    return ""
+
+
+# Rango de peso plausible por categoria. La IA a veces toma otro numero del
+# cartel como peso (un "Toro" de 122 kg es imposible), asi que el peso fuera
+# de rango se descarta y el lote se publica sin peso: el PRECIO, que es el
+# dato importante y se lee bien, se conserva igual.
+PESO_POR_CATEGORIA = {
+    "Ternero":              (110, 290),
+    "Ternera":              (110, 290),
+    "Macho de recría":      (180, 400),
+    "Toro / novillo gordo": (320, 750),
+    "Hembra de recría":     (190, 500),
+    "Vaca gorda":           (270, 600),
+}
 
 
 def read_lot_with_claude(jpeg_bytes, client, model):
@@ -258,8 +277,7 @@ def get_client(key: str = ""):
 # 4. Extraer los lotes vendidos de un video (reusable, sin CLI ni CSV)
 # --------------------------------------------------------------------------
 def extraer_lotes_vendidos(video_url, start=60, end=11700, step=25,
-                            model="claude-haiku-4-5-20251001", client=None,
-                            peso_min=60, peso_max=900):
+                            model="claude-haiku-4-5-20251001", client=None):
     meta = get_video_meta(video_url)
     if meta["duration"]:
         end = min(end, max(start + 60, meta["duration"] - 20))
@@ -283,13 +301,24 @@ def extraer_lotes_vendidos(video_url, start=60, end=11700, step=25,
         if not (5 <= precio <= 45):           # fuera de rango = lectura dudosa
             print(f"  ~ lote {d.get('lote')}: precio dudoso ({precio}) -> a revisar, se omite")
             continue
+        cat = categoria_portal(d.get("clase"), d.get("sexo"))
+        if not cat:      # clase mal leida ("Butorete", etc.): no es publicable
+            print(f"  ~ lote {d.get('lote')}: clase desconocida ({d.get('clase')!r}) -> se omite")
+            continue
         try:
             peso = float(d.get("peso_prom_kg") or 0)
         except (TypeError, ValueError):
             peso = 0
-        # el peso a veces se confunde con el subtotal del cartel (mucho mas grande) -> se omite el dato dudoso, se conserva el precio
-        d["peso_prom_kg"] = peso if (peso_min <= peso <= peso_max) else ""
-        d["categoria_portal"] = categoria_portal(d.get("clase"), d.get("sexo"))
+        # Peso implausible para la categoria = la IA leyo otro numero del cartel.
+        # Se descarta el peso (queda en blanco) pero se conserva el lote: el
+        # precio es el dato que importa y se lee bien.
+        pmin, pmax = PESO_POR_CATEGORIA[cat]
+        if not (pmin <= peso <= pmax):
+            if peso:
+                print(f"  ~ lote {d.get('lote')} ({cat}): peso dudoso ({peso} kg) -> se publica sin peso")
+            peso = ""
+        d["peso_prom_kg"] = peso
+        d["categoria_portal"] = cat
         d["segundo_video"] = l["t"]
         prev = vendidos.get(d["lote"])
         if prev is None or precio > (prev.get("precio_bs_kg") or 0):
