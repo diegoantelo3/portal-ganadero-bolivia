@@ -67,6 +67,8 @@ class Config:
     categorias: Tuple[Categoria, ...]
     estimador: Dict[str, float]
     motivos_descarte: Dict[str, str]
+    comision_cartel: float
+    tolerancia_peso_pct: float
 
     # -- consultas ---------------------------------------------------------
     def categoria_por_id(self, cid: str) -> Optional[Categoria]:
@@ -157,6 +159,8 @@ def _construir(bruto: dict) -> Config:
         categorias=cats,
         estimador={k: float(v) for k, v in bruto.get("estimador", {}).items()},
         motivos_descarte=dict(bruto.get("motivos_descarte", {})),
+        comision_cartel=float(bruto.get("cartel", {}).get("comision", 0.0)),
+        tolerancia_peso_pct=float(bruto.get("cartel", {}).get("tolerancia_peso_pct", 2.0)),
     )
 
 

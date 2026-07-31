@@ -184,12 +184,30 @@ Campos:
 - "raza": raza (ej. "Nelore","Holando","Mestizo","Anelorado","Brahman","Criollo") o null
 - "peso_prom_kg": peso promedio en kg (numero, tipicamente 100-500). NO es el subtotal en Bs.
 - "precio_bs_kg": el PRECIO POR KILO en Bs. Es el numero CHICO del recuadro (tipicamente entre 8 y 30), el que multiplica al peso. Si marca 0, pon 0.
+- "subtotal_bs": el SUBTOTAL en Bs (el numero de miles que aparece debajo, a la izquierda de "Bs") o null.
+- "total_bs": el TOTAL en Bs (el numero de la derecha, el mas grande) o null.
 - "procedencia": lugar de procedencia o null
 
-El recuadro de precio muestra:  PESO PROMEDIO  x  PRECIO  =  subtotal Bs  /  total Bs.
-  -> "peso_prom_kg" = el PESO (100-500 kg).
-  -> "precio_bs_kg" = el PRECIO (8-30 Bs/kg).
-  -> NUNCA pongas el subtotal ni el total (numeros grandes, de miles) en esos campos.
+El recuadro arriba a la derecha muestra:
+
+    PESO PROMEDIO   x   PRECIO Kg/Bs
+        422.50              20.70
+      8,833.21  Bs        52,999.24
+
+  -> "peso_prom_kg" = el PESO PROMEDIO (arriba a la izquierda, 50-900 kg).
+  -> "precio_bs_kg" = el PRECIO (arriba a la derecha, 8-30 Bs/kg).
+  -> "subtotal_bs"  = el numero abajo a la izquierda, junto a "Bs" (8,833.21).
+  -> "total_bs"     = el numero abajo a la derecha (52,999.24).
+
+ATENCION con el PESO PROMEDIO: esta en tipografia digital roja y es facil
+confundir el primer digito. Un '4' se parece a un '1'. Antes de responder,
+comproba tu lectura con esta cuenta que el cartel siempre cumple:
+
+    subtotal = peso_promedio x precio x 1.01
+
+Si no cierra, volve a mirar el peso digito por digito. Ejemplo real: leer
+122.50 donde dice 422.50 da 122.50 x 20.70 x 1.01 = 2560, muy lejos del
+subtotal 8,833.21; con 422.50 da 8,833.2, que si cierra.
 
 Reglas:
 - OJO con el sexo del ternero: si el cartel dice "Ternera" es HEMBRA, si dice "Ternero" es MACHO. Leelo con cuidado.
@@ -296,8 +314,9 @@ def extraer_lotes_vendidos(video_url, start=60, end=11700, step=25,
     return filas, meta
 
 
-CAMPOS_CSV = ["lote", "cantidad", "clase", "sexo", "edad",
-              "raza", "peso_prom_kg", "precio_bs_kg", "procedencia", "segundo_video"]
+CAMPOS_CSV = ["lote", "cantidad", "clase", "sexo", "edad", "raza",
+              "peso_prom_kg", "precio_bs_kg", "subtotal_bs", "total_bs",
+              "procedencia", "segundo_video"]
 
 
 def escribir_csv(filas, out_path):

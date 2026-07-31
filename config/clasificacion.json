@@ -239,5 +239,27 @@
     "min_bs_kg": 5,
     "max_bs_kg": 45,
     "_doc": "Guarda de sanidad: un precio de cierre fuera de este rango es una lectura dudosa."
+  },
+
+  "cartel": {
+    "comision": 0.01,
+    "tolerancia_peso_pct": 2.0,
+    "_doc": [
+      "El recuadro del cartel cumple una invariante aritmetica exacta:",
+      "",
+      "    SUBTOTAL = PESO_PROMEDIO x PRECIO x (1 + comision)",
+      "",
+      "Verificado contra fotogramas del remate 30/07/2026: el ratio da 1.01000",
+      "con dispersion 0.00000 en todos los lotes medidos (comision del 1%).",
+      "",
+      "Eso permite RECALCULAR el peso a partir de dos lecturas independientes",
+      "(subtotal y precio) y detectar errores de OCR en el peso. Es necesario",
+      "porque la IA confunde digitos en la tipografia digital roja del cartel:",
+      "en ese remate leyo 122,50 donde decia 422,50 (un '4' como '1', -300 kg),",
+      "y lo hizo en 5 lotes distintos.",
+      "",
+      "Si el peso leido y el peso recalculado difieren mas de 'tolerancia_peso_pct',",
+      "gana el RECALCULADO y la correccion queda registrada en la auditoria."
+    ]
   }
 }

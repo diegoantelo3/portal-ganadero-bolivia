@@ -81,14 +81,56 @@ def validar_precio(bruto: dict, cfg: Config) -> Tuple[bool, Optional[float], str
     return True, precio, "", ""
 
 
-def validar_peso(bruto: dict, cfg: Config) -> Tuple[bool, Optional[float], str, str]:
-    """Paso 3. El peso es OBLIGATORIO; sin el, no hay clasificacion posible."""
+def peso_desde_subtotal(bruto: dict, precio: float, cfg: Config) -> Optional[float]:
+    """Recalcula el peso con la aritmetica del cartel.
+
+        SUBTOTAL = PESO x PRECIO x (1 + comision)   =>   PESO = SUBTOTAL / (PRECIO x (1+c))
+
+    Devuelve None si el cartel no aporto subtotal (o no es usable). Este peso
+    proviene de dos lecturas independientes, asi que es mas confiable que el
+    numero del recuadro de peso, donde la IA confunde digitos.
+    """
+    subtotal = a_numero(bruto.get("subtotal_bs"))
+    if subtotal is None or subtotal <= 0 or precio <= 0:
+        return None
+    divisor = precio * (1.0 + cfg.comision_cartel)
+    if divisor <= 0:
+        return None
+    return subtotal / divisor
+
+
+def validar_peso(bruto: dict, precio: float, cfg: Config,
+                 auditoria: Optional[Auditoria] = None,
+                 lote_id=None) -> Tuple[bool, Optional[float], str, str]:
+    """Paso 3. El peso es OBLIGATORIO; sin el, no hay clasificacion posible.
+
+    Antes de validar rangos, se reconcilia el peso leido contra el que se
+    deduce del subtotal. Si discrepan mas de la tolerancia, gana el deducido
+    y la correccion queda auditada.
+    """
     peso = a_numero(bruto.get("peso_prom_kg"))
+    derivado = peso_desde_subtotal(bruto, precio, cfg)
+
     if peso is None or peso <= 0:
-        return False, None, "peso_inexistente", "el cartel no arrojo peso promedio"
+        # Sin peso legible, el derivado del subtotal es el unico dato disponible.
+        if derivado is not None and derivado > 0:
+            if auditoria is not None:
+                auditoria.corregir_peso(lote_id, 0.0, derivado,
+                                        a_numero(bruto.get("subtotal_bs")), precio)
+            peso = derivado
+        else:
+            return False, None, "peso_inexistente", "el cartel no arrojo peso promedio"
+    elif derivado is not None and derivado > 0:
+        desvio_pct = abs(peso - derivado) / derivado * 100.0
+        if desvio_pct > cfg.tolerancia_peso_pct:
+            if auditoria is not None:
+                auditoria.corregir_peso(lote_id, peso, derivado,
+                                        a_numero(bruto.get("subtotal_bs")), precio)
+            peso = derivado
+
     if not (cfg.peso_min_kg <= peso <= cfg.peso_max_kg):
         return False, None, "peso_fuera_de_rango", (
-            f"{peso} kg fuera de {cfg.peso_min_kg:.0f}-{cfg.peso_max_kg:.0f} kg")
+            f"{peso:.2f} kg fuera de {cfg.peso_min_kg:.0f}-{cfg.peso_max_kg:.0f} kg")
     return True, peso, "", ""
 
 
@@ -159,8 +201,8 @@ def procesar_lote(bruto: dict, tipo_remate: str, cfg: Config,
     if not ok:
         return descartar(motivo, detalle)
 
-    # 3. Peso
-    ok, peso, motivo, detalle = validar_peso(bruto, cfg)
+    # 3. Peso (reconciliado contra la aritmetica del cartel)
+    ok, peso, motivo, detalle = validar_peso(bruto, precio, cfg, auditoria, lote_id)
     if not ok:
         return descartar(motivo, detalle)
 

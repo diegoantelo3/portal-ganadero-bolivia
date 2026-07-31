@@ -38,6 +38,22 @@ class Conflicto:
 
 
 @dataclass
+class CorreccionPeso:
+    """El peso leido no cerraba con la aritmetica del cartel y se recalculo.
+
+    El cartel cumple SUBTOTAL = PESO x PRECIO x (1 + comision), asi que el peso
+    puede derivarse de dos lecturas independientes. Cuando el peso leido
+    discrepa, gana el derivado y queda constancia de la correccion.
+    """
+    lote: Any
+    peso_leido: float
+    peso_corregido: float
+    diferencia_kg: float
+    subtotal_bs: float
+    precio_bs_kg: float
+
+
+@dataclass
 class Auditoria:
     tipo_remate: str = ""
     tipo_remate_detectado: bool = False
@@ -45,6 +61,7 @@ class Auditoria:
     total_clasificados: int = 0
     descartes: List[Descarte] = field(default_factory=list)
     conflictos: List[Conflicto] = field(default_factory=list)
+    correcciones_peso: List[CorreccionPeso] = field(default_factory=list)
 
     # -- registro ----------------------------------------------------------
     def descartar(self, lote, motivo, motivo_texto, detalle="", datos=None) -> None:
@@ -57,6 +74,14 @@ class Auditoria:
         self.conflictos.append(Conflicto(
             lote=lote, clase_leida=clase_leida or "",
             categoria_asignada=categoria_asignada, peso_kg=peso_kg,
+        ))
+
+    def corregir_peso(self, lote, peso_leido, peso_corregido, subtotal_bs, precio_bs_kg) -> None:
+        self.correcciones_peso.append(CorreccionPeso(
+            lote=lote, peso_leido=round(peso_leido, 2),
+            peso_corregido=round(peso_corregido, 2),
+            diferencia_kg=round(peso_corregido - peso_leido, 2),
+            subtotal_bs=subtotal_bs, precio_bs_kg=precio_bs_kg,
         ))
 
     # -- consultas ---------------------------------------------------------
@@ -76,6 +101,7 @@ class Auditoria:
             "resumen_por_motivo": self.resumen_por_motivo(),
             "descartes": [asdict(d) for d in self.descartes],
             "conflictos_clase_vs_peso": [asdict(c) for c in self.conflictos],
+            "correcciones_de_peso": [asdict(c) for c in self.correcciones_peso],
         }
 
     def guardar(self, ruta: str) -> None:
@@ -90,6 +116,9 @@ class Auditoria:
               f"{self.total_clasificados} clasificados, {len(self.descartes)} descartados")
         for motivo, n in self.resumen_por_motivo().items():
             print(f"{prefijo}  - {motivo}: {n}")
+        if self.correcciones_peso:
+            print(f"{prefijo}  ~ pesos corregidos con la aritmetica del cartel: "
+                  f"{len(self.correcciones_peso)} lotes")
         if self.conflictos:
             print(f"{prefijo}  ! clase vs peso en conflicto (gana el peso): "
                   f"{len(self.conflictos)} lotes")
