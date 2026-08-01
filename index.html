@@ -152,6 +152,54 @@
   .bar-lote{margin-top:12px; font-size:clamp(10px,1.05vw,12.5px); color:var(--ink-m); font-weight:600; text-align:center; line-height:1.25; hyphens:auto;}
   .bar-base{height:1px; background:var(--line); width:100%; margin-top:0;}
 
+  /* Metodologia: de cuantos lotes leidos cuantos se publican */
+  .metodo-grid{
+    display:grid; grid-template-columns:auto auto auto 1fr; gap:20px; align-items:center;
+    background:var(--card); border:1px solid var(--line); border-radius:17px;
+    padding:24px 26px; margin-bottom:26px; box-shadow:0 10px 28px rgba(30,67,56,.04);
+  }
+  .metodo-num{text-align:center; min-width:96px;}
+  .metodo-num .mn{font-family:var(--serif); font-size:38px; font-weight:700; color:var(--ink-mut); line-height:1; font-variant-numeric:tabular-nums;}
+  .metodo-num.destacado .mn{color:var(--ink-h);}
+  .metodo-num .ml{font-size:12.5px; color:var(--ink-mut); margin-top:6px;}
+  .metodo-flecha{font-size:22px; color:var(--olive);}
+  .metodo-detalle{border-left:1px solid var(--line); padding-left:22px;}
+  .md-titulo{font-size:13px; font-weight:700; color:var(--ink-m); margin-bottom:8px;}
+  .md-lista{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:8px 18px;}
+  .md-lista li{font-size:13.5px; color:var(--ink-mut); display:flex; align-items:center; gap:7px;}
+  .md-lista .n{font-weight:700; color:var(--ink-h); font-variant-numeric:tabular-nums;}
+  .md-lista .todo-ok{color:var(--olive); font-weight:600;}
+
+  /* Tendencia: sube o baja respecto al remate anterior */
+  .tend-lista{display:grid; grid-template-columns:repeat(2,1fr); gap:12px 20px;}
+  .tend-fila{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    background:var(--card); border:1px solid var(--line); border-radius:13px; padding:14px 18px;
+  }
+  .tend-cat{font-weight:600; color:var(--ink); font-size:14.5px;}
+  .tend-der{display:flex; align-items:center; gap:14px;}
+  .tend-precio{font-family:var(--serif); font-weight:700; font-size:19px; color:var(--ink-h); font-variant-numeric:tabular-nums;}
+  .tend-var{font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .tend-var.sube{color:#3f7a34;}
+  .tend-var.baja{color:#a4482f;}
+  .tend-var.igual{color:var(--ink-mut);}
+  .tend-espera{
+    background:var(--card-2); border:1px solid var(--line-soft); border-radius:14px;
+    padding:20px 22px; display:flex; gap:13px; align-items:flex-start; font-size:14.5px; color:var(--ink-m);
+  }
+  .tend-espera .i{width:24px;height:24px;flex:none;border-radius:7px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;color:var(--olive);font-weight:800;font-size:13px;}
+
+  /* Compartir por WhatsApp */
+  .btn-wa{
+    display:inline-flex; align-items:center; justify-content:center; gap:9px; width:100%;
+    margin-top:18px; height:46px; border-radius:10px; cursor:pointer;
+    background:#25D366; color:#0b3d24; border:0;
+    font-family:var(--sans); font-size:15px; font-weight:750; text-decoration:none;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn-wa:hover{transform:translateY(-1px); box-shadow:0 8px 20px rgba(37,211,102,.28);}
+  .btn-wa svg{width:19px; height:19px; fill:currentColor;}
+
   /* Traceability steps */
   .steps{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:8px;}
   .step{background:var(--card); border:1px solid var(--line); border-radius:17px; padding:26px 24px;}
@@ -212,6 +260,11 @@
     .cat-cards{grid-template-columns:1fr;}
     .estim{grid-template-columns:1fr; gap:24px; padding:28px 22px;}
     .steps{grid-template-columns:1fr;}
+    .metodo-grid{grid-template-columns:auto auto auto; gap:14px; padding:20px;}
+    .metodo-flecha{font-size:18px;}
+    .metodo-detalle{grid-column:1 / -1; border-left:0; border-top:1px solid var(--line); padding-left:0; padding-top:16px;}
+    .metodo-num .mn{font-size:30px;}
+    .tend-lista{grid-template-columns:1fr;}
     .foot-grid{grid-template-columns:1fr; gap:28px;}
     .nav-date,.menu-btn{display:none;}
   }
@@ -412,6 +465,10 @@
         <div class="rrate" id="erate">Bs 18,00 /kg</div>
         <div class="rlabel">Valor estimado por animal</div>
         <div class="rtotal" id="etotal">Bs 4.500</div>
+        <a class="btn-wa" id="ewa" href="#" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 18.15h-.01c-1.52 0-3.01-.41-4.31-1.18l-.31-.18-3.2.84.85-3.12-.2-.32a8.18 8.18 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.82c0 4.54-3.69 8.23-8.23 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.79.98-.14.16-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.23.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.22-.17-.47-.29z"/></svg>
+          Compartir por WhatsApp
+        </a>
         <div class="rnote">Basado en el remate del 30/07/2026. Con cada remate que se suma, la referencia es más precisa.</div>
       </div>
     </div>
@@ -500,33 +557,68 @@
   </div>
 </section>
 
-<section>
+<section id="tendencias">
   <div class="wrap">
     <div class="sec-head">
-      <p class="eyebrow">Información con trazabilidad</p>
-      <h2 class="serif">Cada cifra debe poder comprobarse.</h2>
-      <p>El portal separa los datos leídos directamente de los valores calculados y de aquellos que todavía necesiten revisión humana.</p>
+      <p class="eyebrow">Tendencia</p>
+      <h2 class="serif">¿Sube o baja?</h2>
+      <p>Cada remate queda guardado para poder comparar precios en el tiempo.</p>
     </div>
+        <div class="tend-espera">
+      <span class="i">i</span>
+      <span>Se necesita otro remate para poder comparar. El portal guarda cada remate automáticamente: hoy lleva <b>1</b>, y con el próximo esta sección empieza a mostrar si el precio de cada categoría sube o baja.</span>
+    </div>
+  </div>
+</section>
+
+<section id="metodologia">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Cómo leemos los datos</p>
+      <h2 class="serif">Cada cifra debe poder comprobarse.</h2>
+      <p>Publicamos sólo los lotes que pasan todos los controles. Estos son los números reales del remate del 30/07/2026.</p>
+    </div>
+
+    <div class="metodo-grid">
+      <div class="metodo-num">
+        <div class="mn">37</div>
+        <div class="ml">lotes leídos del video</div>
+      </div>
+      <div class="metodo-flecha">→</div>
+      <div class="metodo-num destacado">
+        <div class="mn">24</div>
+        <div class="ml">publicados</div>
+      </div>
+      <div class="metodo-detalle">
+        <div class="md-titulo">Los 13 restantes se descartaron por:</div>
+        <ul class="md-lista">
+                    <li><span class="n">12</span> raza inválida</li>
+          <li><span class="n">1</span> precio inexistente o fuera de rango</li>
+        </ul>
+      </div>
+    </div>
+
     <div class="steps">
       <div class="step">
         <div class="num">01</div>
-        <h3>Fuente original</h3>
-        <p>Identificamos el video, la fecha y el minuto exacto de cada lote.</p>
+        <h3>Se lee el cartel</h3>
+        <p>De cada lote del video se leen categoría, cantidad, peso, precio y totales.</p>
       </div>
       <div class="step">
         <div class="num">02</div>
-        <h3>Extracción estructurada</h3>
-        <p>Ordenamos categoría, cantidad, peso y modalidad del precio.</p>
+        <h3>Se verifica la cuenta</h3>
+        <p>El cartel debe cerrar solo: peso × precio × cantidad tiene que dar el total. Si no cierra, el lote no se publica.</p>
       </div>
       <div class="step">
         <div class="num">03</div>
-        <h3>Control de calidad</h3>
-        <p>Los datos dudosos se apartan antes de publicarse como verificados.</p>
+        <h3>Manda el peso</h3>
+        <p>La categoría se decide por el peso del animal, nunca por lo que dice el cartel, porque esa palabra viene con errores.</p>
       </div>
     </div>
+
     <div class="pilot">
       <span class="i">i</span>
-      <span><b>Actualización automática activa.</b> Un robot revisa el canal de FERCOGAN todos los días y republica el portal solo cuando hay un remate nuevo. Última revisión: 31 Jul 2026.</span>
+      <span><b>Actualización automática.</b> Todos los días se revisa el canal de FERCOGAN y el portal se republica solo cuando hay un remate nuevo. Última revisión: 31 Jul 2026.</span>
     </div>
   </div>
 </section>
@@ -542,13 +634,13 @@
         <h4>Secciones</h4>
         <a href="#precios">Precios</a>
         <a href="#resultados">Resultados</a>
-        <a href="#">Tendencias</a>
-        <a href="#">Metodología</a>
+        <a href="#tendencias">Tendencias</a>
+        <a href="#metodologia">Metodología</a>
       </div>
       <div class="foot-col">
         <h4>Fuente</h4>
         <a href="https://www.youtube.com/@FERCOGANvirtual" target="_blank" rel="noopener">Canal FERCOGAN ↗</a>
-        <a href="#">Cómo leemos los datos</a>
+        <a href="#metodologia">Cómo leemos los datos</a>
       </div>
     </div>
     <div class="foot-bottom">
@@ -594,25 +686,47 @@
   })();
 
   // ---- 3. Estimador: categoria + peso -> referencia y valor ----
+  //         (y el mensaje que se comparte por WhatsApp)
   (function(){
     const cat = document.getElementById("ecat");
     const peso = document.getElementById("epeso");
     const pOut = document.getElementById("epesoOut");
     const rate = document.getElementById("erate");
     const total = document.getElementById("etotal");
+    const wa = document.getElementById("ewa");
     if (!cat) return;
     const fmt0 = n => n.toLocaleString("es-BO");
+    const FECHA = "30/07/2026";
+    const URL_PORTAL = "https://portalganadero.netlify.app/";
+
     function upd(){
       const r = parseFloat(cat.value);
       const w = parseInt(peso.value, 10);
+      const etiqueta = cat.options[cat.selectedIndex].textContent.trim();
       pOut.textContent = w + " kg";
+
       if (!r){
         rate.textContent = "Sin datos aún";
         total.textContent = "—";
+        if (wa) wa.style.display = "none";
         return;
       }
-      rate.textContent = "Bs " + r.toFixed(2).replace(".", ",") + " /kg";
-      total.textContent = "Bs " + fmt0(Math.round(w * r));
+      const precio = "Bs " + r.toFixed(2).replace(".", ",");
+      const valor = "Bs " + fmt0(Math.round(w * r));
+      rate.textContent = precio + " /kg";
+      total.textContent = valor;
+
+      if (wa){
+        wa.style.display = "";
+        const texto =
+          "*Portal Ganadero Bolivia*\n" +
+          etiqueta + " de " + w + " kg\n" +
+          "Precio de referencia: " + precio + "/kg\n" +
+          "Valor estimado: " + valor + "\n\n" +
+          "Según el remate de FERCOGAN del " + FECHA + ".\n" +
+          URL_PORTAL;
+        wa.href = "https://wa.me/?text=" + encodeURIComponent(texto);
+      }
     }
     cat.addEventListener("change", upd);
     peso.addEventListener("input", upd);

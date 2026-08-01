@@ -15,6 +15,7 @@ import json
 import os
 
 from engine import cargar_config, procesar_remate
+from engine.historial import resumen_tendencia
 from engine.stats import resumen_general
 
 MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun",
@@ -102,6 +103,62 @@ def render_estimator_options(stats, categorias):
     return "\n".join(out)
 
 
+def render_metodo_motivos(auditoria):
+    """Lista compacta de por que se descarto cada lote. Sin descartes, lo dice."""
+    resumen = auditoria.resumen_por_motivo()
+    if not resumen:
+        return ('          <li><span class="todo-ok">✓ Ninguno: todos los lotes '
+                'del remate pasaron los controles.</span></li>')
+    return "\n".join(
+        f'          <li><span class="n">{n}</span> {esc(motivo.lower())}</li>'
+        for motivo, n in resumen.items()
+    )
+
+
+def render_tendencia(tend):
+    """Sección Tendencia. Con un solo remate no dibuja nada: lo explica."""
+    if not tend["hay_comparacion"]:
+        n = tend["n_remates"]
+        falta = "otro remate" if n >= 1 else "al menos dos remates"
+        return (
+            '    <div class="tend-espera">\n'
+            '      <span class="i">i</span>\n'
+            f'      <span>Se necesita {falta} para poder comparar. '
+            f'El portal guarda cada remate automáticamente: hoy lleva '
+            f'<b>{n}</b>, y con el próximo esta sección empieza a mostrar '
+            'si el precio de cada categoría sube o baja.</span>\n'
+            '    </div>'
+        )
+
+    filas = []
+    for f in tend["filas"]:
+        v = f["variacion"]
+        if not v:
+            continue
+        if v["sentido"] == "sube":
+            flecha, clase, signo = "▲", "sube", "+"
+        elif v["sentido"] == "baja":
+            flecha, clase, signo = "▼", "baja", ""
+        else:
+            flecha, clase, signo = "=", "igual", ""
+        var_txt = ("sin cambio" if v["sentido"] == "igual"
+                   else f'{flecha} {signo}{fmt_bs(v["delta"])} ({signo}{v["pct"]:.1f}%)')
+        filas.append(
+            f'      <div class="tend-fila">\n'
+            f'        <span class="tend-cat">{esc(f["nombre"])}</span>\n'
+            f'        <span class="tend-der">\n'
+            f'          <span class="tend-precio">Bs {fmt_bs(f["precio"])}</span>\n'
+            f'          <span class="tend-var {clase}">{var_txt}</span>\n'
+            f'        </span>\n'
+            f'      </div>'
+        )
+    if not filas:
+        return ('    <div class="tend-espera"><span class="i">i</span>'
+                '<span>Todavía no hay categorías que se repitan entre remates '
+                'para poder compararlas.</span></div>')
+    return '    <div class="tend-lista">\n' + "\n".join(filas) + '\n    </div>'
+
+
 def render_bars(stats, categorias):
     con_datos = [(c, stats[c.id]) for c in categorias if stats.get(c.id)]
     con_datos.sort(key=lambda t: -t[1]["precio_bs_kg"])
@@ -176,6 +233,15 @@ def build(guardar_auditoria=True):
         "url": video_url_con_tiempo(video_url, lc.crudo.get("segundo_video")),
     } for lc in sorted(clasificados, key=lambda l: l.lote or 0)]
 
+    # --- Tendencia: se arma con los remates guardados en data/historial/ ---
+    tend = resumen_tendencia(cfg)
+    if tend["hay_comparacion"]:
+        n = tend["n_remates"]
+        tend_sub = (f"Cómo cambió el precio de cada categoría respecto del remate anterior. "
+                    f"Basado en los últimos {n} remates registrados.")
+    else:
+        tend_sub = "Cada remate queda guardado para poder comparar precios en el tiempo."
+
     est = cfg.estimador
     with open(os.path.join(HERE, "template.html"), encoding="utf-8") as f:
         html = f.read()
@@ -197,10 +263,16 @@ def build(guardar_auditoria=True):
         "{{EST_PESO_MAX}}": f"{est.get('peso_max_kg', 900):.0f}",
         "{{EST_PESO_PASO}}": f"{est.get('peso_paso_kg', 10):.0f}",
         "{{EST_PESO_INICIAL}}": f"{est.get('peso_inicial_kg', 300):.0f}",
+        "{{MET_LEIDOS}}": str(resultado.auditoria.total_entrada),
+        "{{MET_PUBLICADOS}}": str(resumen["n_lotes"]),
+        "{{MET_DESCARTADOS}}": str(len(resultado.auditoria.descartes)),
+        "{{TEND_SUBTITULO}}": esc(tend_sub),
         "<!--CATS_MACHOS-->": render_cat_cards(stats, cats_machos),
         "<!--CATS_HEMBRAS-->": render_cat_cards(stats, cats_hembras),
         "<!--EST_OPTIONS-->": render_estimator_options(stats, cats_visibles),
         "<!--BARS-->": render_bars(stats, cats_visibles),
+        "<!--MET_MOTIVOS-->": render_metodo_motivos(resultado.auditoria),
+        "<!--TENDENCIA-->": render_tendencia(tend),
     }
 
     for token, valor in reemplazos.items():
