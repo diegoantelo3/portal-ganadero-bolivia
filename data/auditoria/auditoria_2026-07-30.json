@@ -2,97 +2,13 @@
   "tipo_remate": "COMPLEMENTARIOS",
   "tipo_remate_detectado": true,
   "total_entrada": 37,
-  "total_clasificados": 18,
-  "total_descartados": 19,
+  "total_clasificados": 24,
+  "total_descartados": 13,
   "resumen_por_motivo": {
-    "Raza inválida": 11,
-    "Cartel mal leído (la aritmética no cierra)": 8
+    "Raza inválida": 12,
+    "Precio inexistente o fuera de rango": 1
   },
   "descartes": [
-    {
-      "lote": 401,
-      "motivo": "cartel_inconsistente",
-      "motivo_texto": "Cartel mal leído (la aritmética no cierra)",
-      "detalle": "total/cantidad (45263.66/5 = 9052.73) no coincide con el subtotal leido (8833.21); alguna cifra del cartel esta mal leida",
-      "datos": {
-        "clase": "Vaquilla",
-        "sexo": "hembra",
-        "raza": "Brahman SIN PRENEZ",
-        "peso_prom_kg": 422.5,
-        "precio_bs_kg": 20.7,
-        "cantidad": 5
-      }
-    },
-    {
-      "lote": 408,
-      "motivo": "cartel_inconsistente",
-      "motivo_texto": "Cartel mal leído (la aritmética no cierra)",
-      "detalle": "total/cantidad (30047.50/4 = 7511.88) no coincide con el subtotal leido (2351.88); alguna cifra del cartel esta mal leida",
-      "datos": {
-        "clase": "Vaquilla",
-        "sexo": "hembra",
-        "raza": "Nelore",
-        "peso_prom_kg": 137.5,
-        "precio_bs_kg": 17,
-        "cantidad": 4
-      }
-    },
-    {
-      "lote": 418,
-      "motivo": "cartel_inconsistente",
-      "motivo_texto": "Cartel mal leído (la aritmética no cierra)",
-      "detalle": "total/cantidad (49964.70/7 = 7137.81) no coincide con el subtotal leido (1872.74); alguna cifra del cartel esta mal leida",
-      "datos": {
-        "clase": "Vaquilla",
-        "sexo": "hembra",
-        "raza": "Nelore",
-        "peso_prom_kg": 115.71,
-        "precio_bs_kg": 17.0,
-        "cantidad": 7
-      }
-    },
-    {
-      "lote": 430,
-      "motivo": "cartel_inconsistente",
-      "motivo_texto": "Cartel mal leído (la aritmética no cierra)",
-      "detalle": "total/cantidad (65725.75/7 = 9389.39) no coincide con el subtotal leido (3389.48); alguna cifra del cartel esta mal leida",
-      "datos": {
-        "clase": "Toro",
-        "sexo": "macho",
-        "raza": "Brahman",
-        "peso_prom_kg": 189.29,
-        "precio_bs_kg": 19,
-        "cantidad": 7
-      }
-    },
-    {
-      "lote": 435,
-      "motivo": "cartel_inconsistente",
-      "motivo_texto": "Cartel mal leído (la aritmética no cierra)",
-      "detalle": "total/cantidad (9567.50/20 = 478.38) no coincide con el subtotal leido (8728.38); alguna cifra del cartel esta mal leida",
-      "datos": {
-        "clase": "Torillo",
-        "sexo": "macho",
-        "raza": "Nelore",
-        "peso_prom_kg": 382.5,
-        "precio_bs_kg": 22.5,
-        "cantidad": 20
-      }
-    },
-    {
-      "lote": 464,
-      "motivo": "cartel_inconsistente",
-      "motivo_texto": "Cartel mal leído (la aritmética no cierra)",
-      "detalle": "total/cantidad (5883.45/17 = 346.09) no coincide con el subtotal leido (5833.32); alguna cifra del cartel esta mal leida",
-      "datos": {
-        "clase": "Torillo",
-        "sexo": "macho",
-        "raza": "Anelorado",
-        "peso_prom_kg": 232.65,
-        "precio_bs_kg": 24.5,
-        "cantidad": 17
-      }
-    },
     {
       "lote": 476,
       "motivo": "raza_invalida",
@@ -137,15 +53,15 @@
     },
     {
       "lote": 484,
-      "motivo": "cartel_inconsistente",
-      "motivo_texto": "Cartel mal leído (la aritmética no cierra)",
-      "detalle": "total/cantidad (52999.24/2 = 26499.62) no coincide con el subtotal leido (7886.94); alguna cifra del cartel esta mal leida",
+      "motivo": "precio_invalido",
+      "motivo_texto": "Precio inexistente o fuera de rango",
+      "detalle": "precio 1.0 Bs/kg fuera de rango",
       "datos": {
         "clase": "Vaquillona",
         "sexo": "hembra",
         "raza": "Nelore",
         "peso_prom_kg": 377.5,
-        "precio_bs_kg": 20.7,
+        "precio_bs_kg": 1,
         "cantidad": 2
       }
     },
@@ -263,20 +179,32 @@
     },
     {
       "lote": 924,
-      "motivo": "cartel_inconsistente",
-      "motivo_texto": "Cartel mal leído (la aritmética no cierra)",
-      "detalle": "total/cantidad (43657.25/5 = 8731.45) no coincide con el subtotal leido (3231.45); alguna cifra del cartel esta mal leida",
+      "motivo": "raza_invalida",
+      "motivo_texto": "Raza inválida",
+      "detalle": "raza 'Mediterranea' no esta entre las aceptadas (Nelore, Brahman)",
       "datos": {
         "clase": "Butorete",
         "sexo": "macho",
         "raza": "Mediterranea",
-        "peso_prom_kg": 175.0,
+        "peso_prom_kg": 475.0,
         "precio_bs_kg": 18.2,
         "cantidad": 5
       }
     }
   ],
   "conflictos_clase_vs_peso": [
+    {
+      "lote": 401,
+      "clase_leida": "Vaquilla",
+      "categoria_asignada": "Vacas",
+      "peso_kg": 433.0
+    },
+    {
+      "lote": 408,
+      "clase_leida": "Vaquilla",
+      "categoria_asignada": "Vacas",
+      "peso_kg": 437.5
+    },
     {
       "lote": 470,
       "clase_leida": "Toro",

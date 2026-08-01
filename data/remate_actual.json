@@ -11,10 +11,10 @@
       "clase": "Vaquilla",
       "sexo": "hembra",
       "edad": "3 Años",
-      "raza": "Brahman SIN PRENEZ",
-      "peso_prom_kg": 422.5,
+      "raza": "Brahman SIN PREÑEZ",
+      "peso_prom_kg": 433.0,
       "precio_bs_kg": 20.7,
-      "subtotal_bs": 8833.21,
+      "subtotal_bs": 9052.73,
       "total_bs": 45263.66,
       "procedencia": "CABEZAS",
       "segundo_video": 4135
@@ -54,9 +54,9 @@
       "sexo": "hembra",
       "edad": "3 Años",
       "raza": "Nelore",
-      "peso_prom_kg": 137.5,
+      "peso_prom_kg": 437.5,
       "precio_bs_kg": 17,
-      "subtotal_bs": 2351.88,
+      "subtotal_bs": 7511.88,
       "total_bs": 30047.5,
       "procedencia": "PORONGO",
       "segundo_video": 4385
@@ -78,13 +78,13 @@
     {
       "lote": 418,
       "cantidad": 7,
-      "clase": "Vaquilla",
+      "clase": "Vaquillona",
       "sexo": "hembra",
       "edad": "4 Años",
       "raza": "Nelore",
-      "peso_prom_kg": 115.71,
+      "peso_prom_kg": 415.71,
       "precio_bs_kg": 17.0,
-      "subtotal_bs": 1872.74,
+      "subtotal_bs": 7137.74,
       "total_bs": 49964.7,
       "procedencia": "CUATRO CAÑADAS",
       "segundo_video": 5710
@@ -137,10 +137,10 @@
       "clase": "Toro",
       "sexo": "macho",
       "edad": "3 Años",
-      "raza": "Brahman",
-      "peso_prom_kg": 189.29,
+      "raza": "Brahman CONFINAMIENT.",
+      "peso_prom_kg": 489.29,
       "precio_bs_kg": 19,
-      "subtotal_bs": 3389.48,
+      "subtotal_bs": 9389.48,
       "total_bs": 65725.75,
       "procedencia": "EL TORNO",
       "segundo_video": 6710
@@ -154,8 +154,8 @@
       "raza": "Nelore",
       "peso_prom_kg": 382.5,
       "precio_bs_kg": 22.5,
-      "subtotal_bs": 8728.38,
-      "total_bs": 9567.5,
+      "subtotal_bs": 8778.38,
+      "total_bs": 175567.5,
       "procedencia": "PAILON SUR",
       "segundo_video": 10185
     },
@@ -252,8 +252,8 @@
       "raza": "Anelorado",
       "peso_prom_kg": 232.65,
       "precio_bs_kg": 24.5,
-      "subtotal_bs": 5833.32,
-      "total_bs": 5883.45,
+      "subtotal_bs": 5813.92,
+      "total_bs": 98835.45,
       "procedencia": "GUARAYOS",
       "segundo_video": 10885
     },
@@ -335,9 +335,9 @@
       "edad": "4 Años",
       "raza": "Nelore",
       "peso_prom_kg": 377.5,
-      "precio_bs_kg": 20.7,
-      "subtotal_bs": 7886.94,
-      "total_bs": 52999.24,
+      "precio_bs_kg": 1,
+      "subtotal_bs": 386.94,
+      "total_bs": 773.88,
       "procedencia": "GUARAYOS",
       "segundo_video": 560
     },
@@ -502,9 +502,9 @@
       "sexo": "macho",
       "edad": "2 Años",
       "raza": "Mediterranea",
-      "peso_prom_kg": 175.0,
+      "peso_prom_kg": 475.0,
       "precio_bs_kg": 18.2,
-      "subtotal_bs": 3231.45,
+      "subtotal_bs": 8731.45,
       "total_bs": 43657.25,
       "procedencia": "PAILON SUR",
       "segundo_video": 9310
@@ -523,5 +523,6 @@
       "procedencia": "CUATRO CAÑADAS",
       "segundo_video": 6510
     }
-  ]
+  ],
+  "repaso_intentado": true
 }
