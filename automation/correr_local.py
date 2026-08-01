@@ -68,14 +68,43 @@ def publicar():
     log("Cambios publicados. Netlify republica en ~1 minuto.")
 
 
+def repasar_pendientes():
+    """Reintenta los carteles que quedaron sin leer del remate publicado.
+
+    Se auto-repara: si una corrida no pudo hacer el repaso (por ejemplo porque
+    YouTube estaba limitando los pedidos), la del dia siguiente lo completa.
+    Se intenta UNA sola vez por remate, para no gastar creditos releyendo
+    lotes que son irrecuperables.
+    """
+    try:
+        import repasar_dudosos
+        recuperados = repasar_dudosos.main(solo_una_vez=True)
+        if recuperados:
+            log(f"Repaso: {recuperados} lotes recuperados con el modelo de respaldo.")
+            return True
+    except SystemExit as e:
+        log(f"Repaso no realizado (se reintenta en la proxima corrida): {e}")
+    except Exception:
+        log("Repaso fallido (se reintenta en la proxima corrida):\n" + traceback.format_exc())
+    return False
+
+
 def main():
     log("--- Inicio ---")
     try:
         import check_and_update
         check_and_update.main()
+        repasar_pendientes()
         publicar()
     except SystemExit as e:            # el motor corta con SystemExit al fallar
         log(f"El motor se detuvo: {e}")
+        # Aunque el chequeo del canal falle, vale la pena intentar el repaso
+        # de lo que ya esta publicado.
+        try:
+            if repasar_pendientes():
+                publicar()
+        except Exception:
+            log("Repaso fallido:\n" + traceback.format_exc())
     except Exception:
         log("ERROR inesperado:\n" + traceback.format_exc())
     log("--- Fin ---")

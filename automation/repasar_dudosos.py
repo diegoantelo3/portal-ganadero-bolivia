@@ -29,10 +29,20 @@ from engine.pipeline import cartel_coherente  # noqa: E402
 ACTUAL = os.path.join(ROOT, "data", "remate_actual.json")
 
 
-def main():
+def main(solo_una_vez=False):
+    """Relee los carteles incoherentes del remate publicado.
+
+    Con `solo_una_vez=True` no hace nada si ya se intento el repaso de este
+    remate. Lo usa la corrida diaria para auto-repararse sin volver a pagar
+    el repaso todos los dias sobre lotes que son irrecuperables.
+    """
     cfg = cargar_config()
     remate = json.load(open(ACTUAL, encoding="utf-8"))
     lots = remate["lots"]
+
+    if solo_una_vez and remate.get("repaso_intentado"):
+        print("· El repaso de este remate ya se intento. Nada que hacer.")
+        return
 
     dudosos = [l for l in lots if cartel_coherente(l, cfg) is False]
     if not dudosos:
@@ -77,11 +87,17 @@ def main():
     cap.release()
     print(f"· Recuperados {recuperados} de {len(dudosos)}.")
 
+    # Se marca el intento aunque no se recupere nada: los lotes que el modelo
+    # de repaso tampoco logra leer son irrecuperables, y reintentarlos todos
+    # los dias solo gastaria creditos.
+    remate["repaso_intentado"] = True
     if recuperados:
         remate["lots"] = sorted(por_lote.values(), key=lambda x: x["lote"] or 0)
-        with open(ACTUAL, "w", encoding="utf-8") as f:
-            json.dump(remate, f, ensure_ascii=False, indent=2)
+    with open(ACTUAL, "w", encoding="utf-8") as f:
+        json.dump(remate, f, ensure_ascii=False, indent=2)
+    if recuperados:
         build_site.build()
+    return recuperados
 
 
 if __name__ == "__main__":
