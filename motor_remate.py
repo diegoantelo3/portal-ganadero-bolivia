@@ -133,9 +133,30 @@ def _fill(frame):
 
 
 def detect_lot_frames(stream_url, start, end, step, change_frac=0.030, min_fill=120):
+    """Agrupa los frames por lote y devuelve UNO por lote: el ULTIMO legible.
+
+    POR QUE EL ULTIMO Y NO EL MAS NITIDO
+    ------------------------------------
+    El precio del cartel es la puja EN VIVO: arranca en 0 y va subiendo hasta
+    que cae el martillo. Verificado en el video (lote 461):
+
+        t=11110 -> 0      t=11185 -> 28,50
+        t=11160 -> 27,00  t=11210 -> 29,00   t=11235 -> 29,10
+
+    La firma que detecta el cambio de lote mira la barra inferior (lote, clase,
+    raza) y NO el recuadro del precio, asi que toda la puja de un lote cae en
+    un mismo grupo. Quedarse con el frame mas nitido del grupo devolvia un
+    precio del MEDIO de la puja (28,50 en vez de 29,10): el portal publicaba
+    precios sistematicamente por debajo del cierre.
+
+    Quedandose con el ultimo frame legible del grupo se obtiene el ultimo
+    estado observado del lote, que es lo mas cerca del precio de cierre que
+    permite el muestreo. Cuesta lo mismo: sigue siendo un frame por lote.
+    """
     cap = cv2.VideoCapture(stream_url)
     if not cap.isOpened():
         raise SystemExit("ERROR: no se pudo abrir el stream para leer frames.")
+
     prev, cur, lots, t = None, None, [], start
     while t <= end:
         cap.set(cv2.CAP_PROP_POS_MSEC, t * 1000)
@@ -146,22 +167,26 @@ def detect_lot_frames(stream_url, start, end, step, change_frac=0.030, min_fill=
         changed = prev is None or float(np.mean(cv2.absdiff(sig, prev) > 25)) > change_frac
         if changed and cur is not None:
             lots.append(cur); cur = None
-        if cur is None:
-            cur = {"t": t, "fill": fill, "frame": frame.copy()}
-        elif fill > cur["fill"]:
-            cur.update(t=t, fill=fill, frame=frame.copy())
+        # De cada grupo se retiene el ULTIMO frame legible. Los frames que no
+        # llegan al umbral son plantillas vacias, publicidad o el logo: si el
+        # grupo entero es asi, `cur` queda en None y el grupo no existe.
+        if fill >= min_fill:
+            if cur is None:
+                cur = {"t": t, "fill": fill, "frame": frame.copy()}
+            else:
+                cur.update(t=t, fill=fill, frame=frame.copy())
         prev = sig; t += step
     if cur is not None:
         lots.append(cur)
     cap.release()
-    # descartar plantillas vacias (poca info en la celda del nº de lote)
-    good = [l for l in lots if l["fill"] >= min_fill]
+
     # recortar a la franja inferior (barra de datos + recuadro de precio)
-    for l in good:
+    for l in lots:
         h = l["frame"].shape[0]
         l["crop"] = l["frame"][int(h * 0.60):h, :]
-    print(f"· Lotes-candidatos detectados: {len(good)}")
-    return good
+
+    print(f"· Lotes-candidatos detectados: {len(lots)}")
+    return lots
 
 
 def crop_to_jpeg(bgr, quality=85):
