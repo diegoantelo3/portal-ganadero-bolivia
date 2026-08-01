@@ -95,7 +95,15 @@ def main(solo_una_vez=False):
         remate["lots"] = sorted(por_lote.values(), key=lambda x: x["lote"] or 0)
     with open(ACTUAL, "w", encoding="utf-8") as f:
         json.dump(remate, f, ensure_ascii=False, indent=2)
+
     if recuperados:
+        # El CSV del historial tiene que quedar igual al remate publicado: de
+        # ahi salen la seccion Tendencia y el reporte de metricas. Si no se
+        # reescribe, el historial queda con las lecturas viejas y mal.
+        csv_hist = os.path.join(ROOT, "data", "historial",
+                                f"remate_{remate['fecha']}.csv")
+        motor.escribir_csv(remate["lots"], csv_hist)
+        print(f"· Historial actualizado: {os.path.basename(csv_hist)}")
         build_site.build()
     return recuperados
 
