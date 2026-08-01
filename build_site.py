@@ -242,6 +242,18 @@ def build(guardar_auditoria=True):
     else:
         tend_sub = "Cada remate queda guardado para poder comparar precios en el tiempo."
 
+    # Texto que se ve en la vista previa al compartir el link (WhatsApp, etc.)
+    top3 = sorted(
+        (stats[c.id] for c in con_datos),
+        key=lambda s: -s["precio_bs_kg"],
+    )[:3]
+    meta_resumen = (
+        f"{resumen['n_lotes']} lotes, {resumen['n_cabezas']} cabezas. "
+        + " · ".join(f"{s['nombre']} Bs {fmt_bs(s['precio_bs_kg'])}/kg" for s in top3)
+        + "." if top3 else
+        f"{resumen['n_lotes']} lotes verificados del remate de FERCOGAN."
+    )
+
     est = cfg.estimador
     with open(os.path.join(HERE, "template.html"), encoding="utf-8") as f:
         html = f.read()
@@ -263,6 +275,7 @@ def build(guardar_auditoria=True):
         "{{EST_PESO_MAX}}": f"{est.get('peso_max_kg', 900):.0f}",
         "{{EST_PESO_PASO}}": f"{est.get('peso_paso_kg', 10):.0f}",
         "{{EST_PESO_INICIAL}}": f"{est.get('peso_inicial_kg', 300):.0f}",
+        "{{META_RESUMEN}}": esc(meta_resumen),
         "{{MET_LEIDOS}}": str(resultado.auditoria.total_entrada),
         "{{MET_PUBLICADOS}}": str(resumen["n_lotes"]),
         "{{MET_DESCARTADOS}}": str(len(resultado.auditoria.descartes)),

@@ -1,4 +1,27 @@
-<title>Portal Ganadero Bolivia | Precios y remates</title>
+<meta charset="utf-8">
+<!-- Sin esta linea el celular renderiza la pagina a 980px y la muestra
+     achicada e ilegible. Es la etiqueta mas importante del archivo. -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portal Ganadero Bolivia | Precios de remates FERCOGAN</title>
+<meta name="description" content="Precios de cierre por categoría del remate de FERCOGAN del {{FECHA_SLASH}}. Ternero, torillos, vaquillas y vacas en Bs/kg, con un estimador para saber cuánto vale tu animal.">
+<meta name="theme-color" content="#17342e">
+<link rel="canonical" href="https://portalganadero.netlify.app/">
+
+<!-- Vista previa al compartir por WhatsApp, Facebook y similares -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_BO">
+<meta property="og:site_name" content="Portal Ganadero Bolivia">
+<meta property="og:url" content="https://portalganadero.netlify.app/">
+<meta property="og:title" content="Portal Ganadero Bolivia — precios del remate del {{FECHA_SLASH}}">
+<meta property="og:description" content="{{META_RESUMEN}}">
+<meta property="og:image" content="https://portalganadero.netlify.app/preview.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Portal Ganadero Bolivia — remate del {{FECHA_SLASH}}">
+<meta name="twitter:description" content="{{META_RESUMEN}}">
+<meta name="twitter:image" content="https://portalganadero.netlify.app/preview.jpg">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23173f35'/><text x='16' y='22' font-family='Georgia,serif' font-size='15' font-weight='700' fill='%23f5f0e4' text-anchor='middle'>PG</text></svg>">
 <style>
   :root{
     --bg:#f5f0e4; --card:#fffdf7; --card-2:#f7f2e6;
@@ -137,7 +160,10 @@
   .note-parcial .i{width:18px;height:18px;flex:none;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:11px;font-style:italic;font-family:var(--serif);color:var(--olive);}
 
   /* Market reading */
+  /* min-width:0 evita que los hijos de un grid se nieguen a achicarse por
+     debajo del ancho de su contenido, que es lo que desbordaba en celular. */
   .market-grid{display:grid; grid-template-columns:1fr 1fr; gap:44px; align-items:center;}
+  .market-grid > *{min-width:0;}
   .stat-row{display:flex; gap:14px; margin:26px 0 0; flex-wrap:wrap;}
   .stat{flex:1; min-width:120px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px;}
   .stat .n{font-family:var(--serif); font-size:26px; font-weight:700; color:var(--ink-h); font-variant-numeric:tabular-nums;}
@@ -265,6 +291,7 @@
     .metodo-detalle{grid-column:1 / -1; border-left:0; border-top:1px solid var(--line); padding-left:0; padding-top:16px;}
     .metodo-num .mn{font-size:30px;}
     .tend-lista{grid-template-columns:1fr;}
+    .stat{min-width:96px;}
     .foot-grid{grid-template-columns:1fr; gap:28px;}
     .nav-date,.menu-btn{display:none;}
   }
