@@ -93,6 +93,38 @@ grupos3 = correr(SEC3, min_fill=200)
 check("solo queda el lote con contenido legible", len(grupos3) == 1,
       f"(dio {len(grupos3)})")
 
+print("\n== Falta de saldo: se corta, no se publican datos a medias ==")
+ERRORES_DE_SALDO = [
+    "Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', "
+    "'message': 'Your credit balance is too low to access the Anthropic API.'}}",
+    "authentication_error: invalid x-api-key",
+]
+for e in ERRORES_DE_SALDO:
+    check(f"detecta como falta de saldo: {e[:46]}...",
+          motor._es_falta_de_credito(Exception(e)))
+
+for e in ["Connection error", "overloaded_error", "la respuesta no trae JSON"]:
+    check(f"NO confunde con falta de saldo: {e!r}",
+          not motor._es_falta_de_credito(Exception(e)))
+
+
+class ClienteSinSaldo:
+    class messages:
+        @staticmethod
+        def create(**_kw):
+            raise Exception(
+                "Error code: 400 - {'error': {'message': "
+                "'Your credit balance is too low to access the Anthropic API.'}}")
+
+
+try:
+    motor.read_lot_with_claude(b"x", ClienteSinSaldo(), "claude-opus-5")
+    check("read_lot_with_claude corta con SinCredito", False, "(no lanzo nada)")
+except motor.SinCredito:
+    check("read_lot_with_claude corta con SinCredito", True)
+except Exception as e:
+    check("read_lot_with_claude corta con SinCredito", False, f"(lanzo {type(e).__name__})")
+
 print("\n" + "=" * 58)
 if fallos:
     print(f"FALLARON {len(fallos)} verificaciones:")

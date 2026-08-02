@@ -93,7 +93,15 @@ def main():
     log("--- Inicio ---")
     try:
         import check_and_update
-        check_and_update.main()
+        from motor_remate import SinCredito
+        try:
+            check_and_update.main()
+        except SinCredito as e:
+            # Sin saldo no se publica nada: mejor dejar el portal como estaba
+            # que mostrar un remate leido a medias.
+            log("SIN SALDO EN LA API — el portal NO se modifico.\n" + str(e))
+            log("--- Fin ---")
+            return
         repasar_pendientes()
         publicar()
     except SystemExit as e:            # el motor corta con SystemExit al fallar

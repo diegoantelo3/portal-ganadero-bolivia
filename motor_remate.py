@@ -251,6 +251,28 @@ Devuelve unicamente el JSON."""
 # o razas aceptadas, no toques este archivo.
 
 
+class SinCredito(Exception):
+    """Se agoto el saldo de la API (o la clave dejo de ser valida).
+
+    Es distinto de "este cartel no se pudo leer": no tiene sentido seguir
+    intentando, y sobre todo NO hay que publicar un remate leido a medias.
+    """
+
+
+# Un error de saldo/autenticacion llega como 400/401 con estos textos.
+_SENALES_SIN_CREDITO = (
+    "credit balance is too low",
+    "billing",
+    "insufficient_quota",
+    "authentication_error",
+    "invalid x-api-key",
+)
+
+
+def _es_falta_de_credito(e) -> bool:
+    return any(s in str(e).lower() for s in _SENALES_SIN_CREDITO)
+
+
 def read_lot_with_claude(jpeg_bytes, client, model):
     b64 = base64.b64encode(jpeg_bytes).decode()
     for intento in range(3):
@@ -275,6 +297,10 @@ def read_lot_with_claude(jpeg_bytes, client, model):
                 raise ValueError(f"la respuesta no trae JSON: {txt[:80]!r}")
             return json.loads(txt[i:j + 1])
         except Exception as e:
+            # Falta de saldo o clave invalida: cortar de una. Reintentar no
+            # sirve, y seguir dejaria el remate leido a medias.
+            if _es_falta_de_credito(e):
+                raise SinCredito(str(e)) from e
             if intento == 2:
                 print(f"  ! no se pudo leer un lote: {e}")
                 return {"vacio": True, "error": str(e)[:80]}
@@ -340,7 +366,19 @@ def extraer_lotes_vendidos(video_url, start=60, end=11700, step=None,
     # el motor -> no hay numeros duplicados entre este archivo y engine/.
     vendidos, frames = {}, {}
     for k, l in enumerate(lots):
-        d = read_lot_with_claude(crop_to_jpeg(l["crop"]), client, model)
+        try:
+            d = read_lot_with_claude(crop_to_jpeg(l["crop"]), client, model)
+        except SinCredito as e:
+            # Cortar SIN devolver nada: un remate leido a medias publicado como
+            # completo es peor que no actualizar. El llamador no escribe nada.
+            raise SinCredito(
+                f"Se corto la lectura en el cartel {k + 1} de {len(lots)}: "
+                f"falta saldo en la API de Anthropic.\n"
+                f"  Cargue credito en https://console.anthropic.com "
+                f"(Plans & Billing) y vuelva a correr.\n"
+                f"  NO se modifico ningun dato del portal.\n"
+                f"  Detalle: {e}"
+            ) from e
         if d.get("vacio") or not d.get("lote"):
             continue
         try:
