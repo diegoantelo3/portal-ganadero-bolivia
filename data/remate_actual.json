@@ -3,7 +3,7 @@
   "video_url": "https://www.youtube.com/watch?v=HNJ-LKkF3RI",
   "video_id": "HNJ-LKkF3RI",
   "titulo_video": "REMATE COMERCIAL FERCOGAN SRL 01/08/2026",
-  "generado_el": "2026-08-02T16:03:15+00:00",
+  "generado_el": "2026-08-02T16:33:21+00:00",
   "lots": [
     {
       "lote": 552,
@@ -14,10 +14,10 @@
       "raza": "Nelore",
       "peso_prom_kg": 192.86,
       "precio_bs_kg": 26.5,
-      "subtotal_bs": 5161.8,
+      "subtotal_bs": 5161.9,
       "total_bs": 36132.75,
-      "procedencia": "ROBOBRE",
-      "segundo_video": 1935
+      "procedencia": "ROBORE",
+      "segundo_video": 1950
     },
     {
       "lote": 555,
@@ -31,7 +31,7 @@
       "subtotal_bs": 6504.65,
       "total_bs": 6504.65,
       "procedencia": "ROBORE",
-      "segundo_video": 310
+      "segundo_video": 320
     },
     {
       "lote": 642,
@@ -56,10 +56,10 @@
       "raza": "Nelore AYUNO EXT.",
       "peso_prom_kg": 395.0,
       "precio_bs_kg": 17.6,
-      "subtotal_bs": 7041.52,
+      "subtotal_bs": 7021.52,
       "total_bs": 28086.08,
       "procedencia": "PAILON",
-      "segundo_video": 810
+      "segundo_video": 820
     },
     {
       "lote": 644,
@@ -76,18 +76,46 @@
       "segundo_video": 1760
     },
     {
+      "lote": 645,
+      "cantidad": 15,
+      "clase": "Vaquilla",
+      "sexo": "hembra",
+      "edad": "2 Años",
+      "raza": "Nelore",
+      "peso_prom_kg": 264.67,
+      "precio_bs_kg": 19.4,
+      "subtotal_bs": 5185.94,
+      "total_bs": 77788.18,
+      "procedencia": "PAILON",
+      "segundo_video": 1640
+    },
+    {
+      "lote": 646,
+      "cantidad": 5,
+      "clase": "Toro",
+      "sexo": "macho",
+      "edad": "4 Años",
+      "raza": "Nelore",
+      "peso_prom_kg": 528.0,
+      "precio_bs_kg": 21.5,
+      "subtotal_bs": 11465.52,
+      "total_bs": 57327.6,
+      "procedencia": "PORONGO",
+      "segundo_video": 1140
+    },
+    {
       "lote": 647,
       "cantidad": 4,
       "clase": "Toro",
       "sexo": "macho",
       "edad": "4 Años",
       "raza": "Mestizo",
-      "peso_prom_kg": 368.46,
+      "peso_prom_kg": 588.75,
       "precio_bs_kg": 20.8,
       "subtotal_bs": 12368.46,
       "total_bs": 49473.84,
       "procedencia": "PORONGO",
-      "segundo_video": 1410
+      "segundo_video": 1430
     },
     {
       "lote": 648,
@@ -108,14 +136,14 @@
       "cantidad": 1,
       "clase": "Vaca",
       "sexo": "hembra",
-      "edad": "5 años",
+      "edad": "5 Años",
       "raza": "Mestizo",
       "peso_prom_kg": 330.0,
-      "precio_bs_kg": 12.0,
-      "subtotal_bs": 4059.0,
-      "total_bs": 4059.0,
+      "precio_bs_kg": 12.4,
+      "subtotal_bs": 4194.3,
+      "total_bs": 4194.3,
       "procedencia": "WARNES",
-      "segundo_video": 3485
+      "segundo_video": 3490
     },
     {
       "lote": 650,
@@ -138,12 +166,12 @@
       "sexo": "macho",
       "edad": "1 Año",
       "raza": "Nelore",
-      "peso_prom_kg": 402.35,
-      "precio_bs_kg": 23.6,
-      "subtotal_bs": 5402.35,
-      "total_bs": 16207.3,
+      "peso_prom_kg": 223.33,
+      "precio_bs_kg": 23.7,
+      "subtotal_bs": 5425.24,
+      "total_bs": 16275.98,
       "procedencia": "SAN JULIAN",
-      "segundo_video": 2785
+      "segundo_video": 2800
     },
     {
       "lote": 652,
@@ -153,11 +181,11 @@
       "edad": "5 Años",
       "raza": "Nelore",
       "peso_prom_kg": 815.0,
-      "precio_bs_kg": 21.5,
-      "subtotal_bs": 17960.56,
-      "total_bs": 17960.56,
+      "precio_bs_kg": 21.4,
+      "subtotal_bs": 17877.03,
+      "total_bs": 17877.02,
       "procedencia": "MACHARETY",
-      "segundo_video": 2985
+      "segundo_video": 2990
     },
     {
       "lote": 653,
@@ -171,7 +199,7 @@
       "subtotal_bs": 4581.83,
       "total_bs": 32072.55,
       "procedencia": "SAN RAFAEL DE V.",
-      "segundo_video": 2585
+      "segundo_video": 2580
     },
     {
       "lote": 654,
@@ -192,14 +220,14 @@
       "cantidad": 1,
       "clase": "Vaca",
       "sexo": "hembra",
-      "edad": "5 años",
-      "raza": "Nelore",
-      "peso_prom_kg": 455,
+      "edad": "5 Años",
+      "raza": "Nelore OBSERVADO",
+      "peso_prom_kg": 355.0,
       "precio_bs_kg": 12.3,
       "subtotal_bs": 4475.66,
       "total_bs": 4475.66,
       "procedencia": "SAN RAFAEL DE V.",
-      "segundo_video": 3385
+      "segundo_video": 3390
     },
     {
       "lote": 656,
@@ -209,11 +237,11 @@
       "edad": "5 Años",
       "raza": "Nelore",
       "peso_prom_kg": 450.0,
-      "precio_bs_kg": 17.4,
-      "subtotal_bs": 8025.75,
-      "total_bs": null,
+      "precio_bs_kg": 17.3,
+      "subtotal_bs": 7979.63,
+      "total_bs": 7979.62,
       "procedencia": "SAN RAFAEL DE V.",
-      "segundo_video": 460
+      "segundo_video": 470
     },
     {
       "lote": 657,
@@ -227,7 +255,7 @@
       "subtotal_bs": 11491.28,
       "total_bs": 45965.1,
       "procedencia": "PORONGO",
-      "segundo_video": 1260
+      "segundo_video": 1280
     },
     {
       "lote": 658,
@@ -241,7 +269,7 @@
       "subtotal_bs": 7554.8,
       "total_bs": 90657.6,
       "procedencia": "WARNES",
-      "segundo_video": 2260
+      "segundo_video": 2270
     },
     {
       "lote": 659,
@@ -250,12 +278,12 @@
       "sexo": "hembra",
       "edad": "3 Años",
       "raza": "Anelorado OBSERVADO",
-      "peso_prom_kg": 240,
+      "peso_prom_kg": 240.0,
       "precio_bs_kg": 11.5,
       "subtotal_bs": 2829.0,
       "total_bs": 2829.0,
       "procedencia": "PORTACHUELO",
-      "segundo_video": 3210
+      "segundo_video": 3220
     }
   ]
 }
