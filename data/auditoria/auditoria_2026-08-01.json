@@ -1,0 +1,98 @@
+{
+  "tipo_remate": "COMPLEMENTARIOS",
+  "tipo_remate_detectado": true,
+  "total_entrada": 18,
+  "total_clasificados": 14,
+  "total_descartados": 4,
+  "resumen_por_motivo": {
+    "Raza inválida": 4
+  },
+  "descartes": [
+    {
+      "lote": 647,
+      "motivo": "raza_invalida",
+      "motivo_texto": "Raza inválida",
+      "detalle": "raza 'Mestizo' no esta entre las aceptadas (Nelore, Brahman)",
+      "datos": {
+        "clase": "Toro",
+        "sexo": "macho",
+        "raza": "Mestizo",
+        "peso_prom_kg": 368.46,
+        "precio_bs_kg": 20.8,
+        "cantidad": 4
+      }
+    },
+    {
+      "lote": 648,
+      "motivo": "raza_invalida",
+      "motivo_texto": "Raza inválida",
+      "detalle": "raza 'Mestizo' no esta entre las aceptadas (Nelore, Brahman)",
+      "datos": {
+        "clase": "Torillo",
+        "sexo": "macho",
+        "raza": "Mestizo",
+        "peso_prom_kg": 277.5,
+        "precio_bs_kg": 18.4,
+        "cantidad": 4
+      }
+    },
+    {
+      "lote": 649,
+      "motivo": "raza_invalida",
+      "motivo_texto": "Raza inválida",
+      "detalle": "raza 'Mestizo' no esta entre las aceptadas (Nelore, Brahman)",
+      "datos": {
+        "clase": "Vaca",
+        "sexo": "hembra",
+        "raza": "Mestizo",
+        "peso_prom_kg": 330.0,
+        "precio_bs_kg": 12.0,
+        "cantidad": 1
+      }
+    },
+    {
+      "lote": 650,
+      "motivo": "raza_invalida",
+      "motivo_texto": "Raza inválida",
+      "detalle": "raza 'Mestizo' no esta entre las aceptadas (Nelore, Brahman)",
+      "datos": {
+        "clase": "Vaquilla",
+        "sexo": "hembra",
+        "raza": "Mestizo",
+        "peso_prom_kg": 230.0,
+        "precio_bs_kg": 15.5,
+        "cantidad": 4
+      }
+    }
+  ],
+  "conflictos_clase_vs_peso": [],
+  "correcciones_de_peso": [
+    {
+      "lote": 647,
+      "peso_leido": 368.46,
+      "peso_corregido": 588.75,
+      "diferencia_kg": 220.29,
+      "base_bs": 12368.46,
+      "precio_bs_kg": 20.8,
+      "fuente": "subtotal"
+    },
+    {
+      "lote": 651,
+      "peso_leido": 402.35,
+      "peso_corregido": 226.65,
+      "diferencia_kg": -175.7,
+      "base_bs": 5402.35,
+      "precio_bs_kg": 23.6,
+      "fuente": "subtotal"
+    },
+    {
+      "lote": 655,
+      "peso_leido": 455.0,
+      "peso_corregido": 360.27,
+      "diferencia_kg": -94.73,
+      "base_bs": 4475.66,
+      "precio_bs_kg": 12.3,
+      "fuente": "subtotal"
+    }
+  ]
+}

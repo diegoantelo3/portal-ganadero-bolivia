@@ -1,0 +1,19 @@
+﻿lote,cantidad,clase,sexo,edad,raza,peso_prom_kg,precio_bs_kg,subtotal_bs,total_bs,procedencia,segundo_video
+552,7,Ternero,macho,8 Meses,Nelore,192.86,26.5,5161.8,36132.75,ROBOBRE,1935
+555,1,Vaca,hembra,5 Años,Nelore,380.0,16.7,6504.65,6504.65,ROBORE,310
+642,2,Vaquilla,hembra,2 Años,Nelore AYUNO EXT.,382.5,19.0,7449.19,14898.38,PAILON,160
+643,4,Vaca,hembra,5 Años,Nelore AYUNO EXT.,395.0,17.6,7041.52,28086.08,PAILON,810
+644,14,Vaquilla,hembra,2 Años,Nelore AYUNO EXT.,270.0,20.2,5508.54,77119.56,PAILON,1760
+647,4,Toro,macho,4 Años,Mestizo,368.46,20.8,12368.46,49473.84,PORONGO,1410
+648,4,Torillo,macho,2 Años,Mestizo,277.5,18.4,5157.06,20628.24,WARNES,2110
+649,1,Vaca,hembra,5 años,Mestizo,330.0,12.0,4059.0,4059.0,WARNES,3485
+650,4,Vaquilla,hembra,3 Años,Mestizo,230.0,15.5,3600.65,14402.6,PORTACHUELO,2410
+651,3,Torillo,macho,1 Año,Nelore,402.35,23.6,5402.35,16207.3,SAN JULIAN,2785
+652,1,Toro,macho,5 Años,Nelore,815.0,21.5,17960.56,17960.56,MACHARETY,2985
+653,7,Vaquillona,hembra,4 Años,Nelore,312.86,14.5,4581.83,32072.55,SAN RAFAEL DE V.,2585
+654,2,Vaquilla,hembra,2 Años,Nelore,290.0,21.0,6242.25,12484.5,SAN RAFAEL DE V.,610
+655,1,Vaca,hembra,5 años,Nelore,455,12.3,4475.66,4475.66,SAN RAFAEL DE V.,3385
+656,1,Vaca,hembra,5 Años,Nelore,450.0,17.4,8025.75,,SAN RAFAEL DE V.,460
+657,4,Toro,macho,4 Años,Nelore,555.0,20.5,11491.28,45965.1,PORONGO,1260
+658,12,Torillo,macho,2 Años,Nelore,340.0,22.0,7554.8,90657.6,WARNES,2260
+659,1,Vaquilla,hembra,3 Años,Anelorado OBSERVADO,240,11.5,2829.0,2829.0,PORTACHUELO,3210
