@@ -299,7 +299,7 @@ def get_client(key: str = ""):
 # --------------------------------------------------------------------------
 # 4. Extraer los lotes vendidos de un video (reusable, sin CLI ni CSV)
 # --------------------------------------------------------------------------
-def extraer_lotes_vendidos(video_url, start=60, end=11700, step=25,
+def extraer_lotes_vendidos(video_url, start=60, end=11700, step=None,
                             model=None, client=None):
     """Lee el video en DOS pasadas.
 
@@ -317,11 +317,17 @@ def extraer_lotes_vendidos(video_url, start=60, end=11700, step=25,
 
     cfg = cargar_config()
     model = model or cfg.modelo_lectura
+    step = step or cfg.paso_muestreo_seg
 
+    # Se recorre el video ENTERO. Antes habia un tope fijo de 11700 s (3,25 h)
+    # que dejaba sin revisar las ultimas 2 horas del remate del 30/07, que dura
+    # 5,3 h. Los remates de FERCOGAN van de 1 a 6 horas.
     meta = get_video_meta(video_url)
     if meta["duration"]:
-        end = min(end, max(start + 60, meta["duration"] - 20))
+        end = max(start + 60, meta["duration"] - 20)
 
+    print(f"· Recorriendo el video cada {step} s "
+          f"(~{max(0, (end - start) // step)} fotogramas a revisar)...")
     stream = get_stream_url(video_url)
     lots = detect_lot_frames(stream, start, end, step)
 

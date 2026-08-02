@@ -72,6 +72,7 @@ class Config:
     modelo_lectura: str
     modelo_repaso: str
     repaso_activo: bool
+    paso_muestreo_seg: int
 
     # -- consultas ---------------------------------------------------------
     def categoria_por_id(self, cid: str) -> Optional[Categoria]:
@@ -168,6 +169,7 @@ def _construir(bruto: dict) -> Config:
             "modelo_lectura", "claude-haiku-4-5-20251001"),
         modelo_repaso=bruto.get("extraccion", {}).get("modelo_repaso", "claude-opus-5"),
         repaso_activo=bool(bruto.get("extraccion", {}).get("repaso_activo", True)),
+        paso_muestreo_seg=int(bruto.get("extraccion", {}).get("paso_muestreo_seg", 25)),
     )
 
 
