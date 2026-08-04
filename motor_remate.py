@@ -30,7 +30,7 @@ lee el cartel con IA de vision (API de Claude) y produce un CSV limpio.
 =============================================================================
 """
 
-import os, sys, io, csv, json, base64, argparse, subprocess, time
+import os, sys, io, csv, json, re, base64, argparse, subprocess, time
 import numpy as np
 import cv2
 
@@ -307,18 +307,73 @@ def read_lot_with_claude(jpeg_bytes, client, model):
             time.sleep(2)
 
 
-def get_client(key: str = ""):
+_RE_CLAVE = re.compile(r"sk-ant-[A-Za-z0-9_\-]{30,}")
+
+# Lugares donde se busca la clave, en orden. Se aceptan varios nombres porque
+# el archivo se guarda a mano y no siempre queda con el nombre esperado.
+_CARPETAS_CLAVE = (
+    os.path.join(os.path.expanduser("~"), "Downloads"),
+    os.path.dirname(os.path.abspath(__file__)),                       # el proyecto
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),      # la carpeta que lo contiene
+    os.path.join(os.path.expanduser("~"), "OneDrive", "Desktop"),
+    os.path.join(os.path.expanduser("~"), "Desktop"),
+)
+
+
+def buscar_clave():
+    """Devuelve (clave, de_donde_salio) o (None, motivo).
+
+    Busca en el entorno y despues en archivos .txt que contengan una clave, en
+    las carpetas habituales. Devolver el ORIGEN es importante: cuando hay
+    varias claves dando vueltas (por ejemplo de organizaciones distintas),
+    saber cual se esta usando evita perder horas.
+    """
+    k = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    if k:
+        return k, "la variable de entorno ANTHROPIC_API_KEY"
+
+    revisados = []
+    for carpeta in _CARPETAS_CLAVE:
+        if not os.path.isdir(carpeta):
+            continue
+        try:
+            nombres = sorted(os.listdir(carpeta))
+        except OSError:
+            continue
+        # primero clave.txt, despues cualquier .txt que mencione la clave
+        prioridad = [n for n in nombres if n.lower() == "clave.txt"]
+        otros = [n for n in nombres
+                 if n.lower().endswith(".txt") and n.lower() != "clave.txt"
+                 and ("clave" in n.lower() or "key" in n.lower() or "api" in n.lower())]
+        for nombre in prioridad + otros:
+            ruta = os.path.join(carpeta, nombre)
+            revisados.append(ruta)
+            try:
+                if os.path.getsize(ruta) > 20000:
+                    continue
+                m = _RE_CLAVE.search(open(ruta, encoding="utf-8-sig", errors="ignore").read())
+            except OSError:
+                continue
+            if m:
+                return m.group(0), ruta
+    return None, revisados
+
+
+def get_client(key: str = "", avisar=True):
     import anthropic
-    key = key or os.environ.get("ANTHROPIC_API_KEY", "").strip()
-    if not key:  # si no esta en el entorno, la lee de clave.txt en Descargas
-        p = os.path.join(os.path.expanduser("~"), "Downloads", "clave.txt")
-        if os.path.exists(p):
-            import re
-            raw = open(p, encoding="utf-8-sig").read()
-            m = re.search(r"sk-ant-[A-Za-z0-9_\-]{30,}", raw)
-            key = m.group(0) if m else ""
+    origen = "el parametro"
     if not key:
-        raise SystemExit("Falta tu clave: pone clave.txt en Descargas o set ANTHROPIC_API_KEY")
+        key, origen = buscar_clave()
+    if not key:
+        revisados = "\n     ".join(origen[:8]) if isinstance(origen, list) else str(origen)
+        raise SystemExit(
+            "No se encontro ninguna clave de la API de Anthropic.\n"
+            "  Guarda la clave (empieza con sk-ant-) en un archivo de texto\n"
+            "  llamado clave.txt en la carpeta Descargas, o defini la variable\n"
+            "  de entorno ANTHROPIC_API_KEY.\n"
+            "  Se busco en:\n     " + revisados)
+    if avisar:
+        print(f"· Clave leida de: {origen}  ({key[:14]}...{key[-4:]})")
     return anthropic.Anthropic(api_key=key)
 
 
