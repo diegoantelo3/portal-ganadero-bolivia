@@ -1,15 +1,16 @@
 # Portal Ganadero Bolivia — versión automática
 
-Portal con los precios del remate comercial de FERCOGAN, actualizado solo todos los días.
+Portal con los precios del remate comercial de FERCOGAN, actualizado solo.
 
 ## Cómo funciona
 
-1. Todos los días a las 21:00, el **Programador de tareas de Windows** ejecuta
+1. **Cada hora**, el **Programador de tareas de Windows** ejecuta
    `ACTUALIZAR-PORTAL.bat` en la PC de Cindy.
-2. El script revisa la pestaña **Streams** del canal `@FERCOGANvirtual` buscando
-   el video más nuevo cuyo título contenga **"REMATE COMERCIAL"**.
-3. Si es un remate que todavía no se procesó (compara contra
-   `data/last_processed.json`), corre `motor_remate.py` sobre ese video: lee
+2. El script revisa la pestaña **Streams** del canal `@FERCOGANvirtual` y se
+   queda con los videos de remate comercial (los patrones de título están en
+   `config/clasificacion.json`, en los dos idiomas que usa FERCOGAN).
+3. Procesa **todos los que falten**, del más viejo al más nuevo, comparando
+   contra `data/procesados.json`. Sobre cada uno corre `motor_remate.py`: lee
    cada cartel de lote con la IA de visión de Claude y arma la lista de lotes
    vendidos.
 4. `build_site.py` toma esos datos (`data/remate_actual.json`) y regenera
@@ -17,8 +18,42 @@ Portal con los precios del remate comercial de FERCOGAN, actualizado solo todos 
 5. El script hace commit y push a GitHub. Netlify, conectado a este
    repositorio, republica el sitio solo en cuanto detecta el push.
 
-Si no hay remate nuevo ese día, no cambia nada. Todo queda registrado en
+Si no hay remate nuevo, no cambia nada. Todo queda registrado en
 `data/registro.log`.
+
+### ¿Por qué cada hora y no una vez al día?
+
+Antes corría solo a las 21:00. El remate terminaba a media tarde y el portal
+seguía mostrando el del día anterior hasta la noche: el visitante veía datos
+viejos y concluía que la página no se actualiza. **Chequear el canal es gratis**
+— son ~4 segundos de `yt-dlp` listando títulos, sin ninguna llamada a la API de
+Claude. Solo se gasta cuando aparece un remate nuevo de verdad. Por eso conviene
+mirar seguido.
+
+Tres cosas hacen que correr seguido sea seguro:
+
+- **`MultipleInstances: IgnoreNew`** en la tarea programada: mientras una
+  corrida está leyendo un remate (puede tardar ~40 min), el tic de la hora
+  siguiente no arranca una segunda copia que escriba los mismos archivos.
+- **`live_status`**: si el remate se está transmitiendo *en ese momento*, se
+  deja pasar sin leerlo y sin contarlo como intento fallido. Publicar medio
+  remate es peor que no publicar nada.
+- **`data/procesados.json`**: un remate ya leído no se vuelve a pagar.
+
+### ¿Por qué "todos los que falten" y no "el último"?
+
+Antes solo se miraba el video más nuevo. Si un día fallaba (video bloqueado por
+derechos de autor, sin saldo en la API, YouTube caído) y al día siguiente
+aparecía otro, el que falló quedaba atrás **para siempre**: nunca volvía a ser
+"el más nuevo". Ese era el caso del choque que preocupaba — el remate del lunes
+sin procesar cuando ya estaba el del martes. Ahora se procesan los dos, del más
+viejo al más nuevo, así el que queda publicado es el más reciente y ninguno
+falta en el historial.
+
+Solo entran a la cola automática los remates de los últimos
+`deteccion_remate.dias_hacia_atras` días (4 por defecto). Sin ese límite, la
+primera corrida se pondría a leer todo el canal. Para traer remates más viejos a
+propósito: `python automation/reprocesar_historial.py`.
 
 ### ¿Por qué corre en la PC y no en la nube?
 
@@ -116,12 +151,13 @@ animales pesa 20 veces más que uno de 1 en la referencia.
 | `tests/test_engine.py` | ~90 verificaciones. Correr con `python tests/test_engine.py`. |
 | `ACTUALIZAR-PORTAL.bat` | Lo que ejecuta el Programador de tareas. Doble clic para forzar una actualización. |
 | `automation/correr_local.py` | Corre el chequeo y publica los cambios (git push). Escribe `data/registro.log`. |
-| `automation/check_and_update.py` | Busca el remate nuevo en el canal y dispara el motor. |
+| `automation/check_and_update.py` | Busca los remates que faltan en el canal y dispara el motor. |
 | `motor_remate.py` | **Solo extrae**: video → filas crudas. No clasifica ni valida. |
 | `build_site.py` | **Solo presenta**: delega en `engine/` y rellena `template.html`. |
 | `template.html` | Diseño del portal con marcadores. Sin rangos ni categorías adentro. |
 | `data/remate_actual.json` | Datos crudos del remate que se está mostrando. |
-| `data/last_processed.json` | Qué video ya se procesó (para no repetirlo). |
+| `data/procesados.json` | Qué videos ya se procesaron y cuáles fallaron (para no repetirlos ni volver a pagarlos). |
+| `data/last_processed.json` | El último publicado. Se mantiene por compatibilidad con `reprocesar.py`. |
 | `data/historial/` | Copia en CSV de cada remate procesado. |
 | `data/auditoria/` | Por remate: qué se descartó y por qué. |
 | `data/registro.log` | Qué pasó en cada corrida (no se sube a GitHub). |

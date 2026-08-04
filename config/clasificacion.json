@@ -48,6 +48,18 @@
   },
 
   "deteccion_remate": {
+    "dias_hacia_atras": 4,
+    "_doc_dias": [
+      "Solo se procesan automaticamente los remates de los ultimos N dias.",
+      "",
+      "Sin este limite, la primera corrida se pondria a leer TODO el canal",
+      "(habia 7 remates de julio sin procesar): horas de trabajo y varios",
+      "dolares que nadie pidio.",
+      "",
+      "Con 4 dias alcanza para recuperarse de un fin de semana con la maquina",
+      "apagada o de un video que fallo ayer. Para traer remates mas viejos a",
+      "proposito: python automation/reprocesar_historial.py"
+    ],
     "patrones_titulo": [
       "remate comercial",
       "commercial auction"

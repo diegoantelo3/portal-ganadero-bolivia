@@ -75,6 +75,7 @@ class Config:
     paso_muestreo_seg: int
     patrones_remate: Tuple[str, ...]
     excluir_remate: Tuple[str, ...]
+    dias_hacia_atras: int
 
     # -- consultas ---------------------------------------------------------
     def categoria_por_id(self, cid: str) -> Optional[Categoria]:
@@ -175,6 +176,7 @@ def _construir(bruto: dict) -> Config:
         patrones_remate=tuple(bruto.get("deteccion_remate", {}).get(
             "patrones_titulo", ("remate comercial",))),
         excluir_remate=tuple(bruto.get("deteccion_remate", {}).get("excluir", ())),
+        dias_hacia_atras=int(bruto.get("deteccion_remate", {}).get("dias_hacia_atras", 4)),
     )
 
 

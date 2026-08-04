@@ -9,12 +9,13 @@ Los titulos son REALES, tomados del canal de FERCOGAN.
 
 import os
 import sys
+from datetime import datetime, timedelta
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, RAIZ)
 sys.path.insert(0, os.path.join(RAIZ, "automation"))
 
-from check_and_update import es_remate, fecha_desde_meta  # noqa: E402
+from check_and_update import es_remate, es_reciente, fecha_desde_meta  # noqa: E402
 
 fallos = []
 
@@ -78,6 +79,35 @@ check_fecha("FERCOGAN SRL COMMERCIAL AUCTION 07/30/2026", "20260730", "2026-07-3
 check_fecha("FERCOGAN SRL COMMERCIAL AUCTION", "20260803", "2026-08-03")
 # Video subido un dia despues del remate: el titulo sigue mandando.
 check_fecha("REMATE COMERCIAL FERCOGAN SRL 03/08/2026", "20260804", "2026-08-03")
+
+print("\n== Ventana: que remates se procesan solos y cuales no ==")
+
+
+def check_ventana(dias_atras, dias_ventana, esperado):
+    f = datetime.now() - timedelta(days=dias_atras)
+    titulo = "REMATE COMERCIAL FERCOGAN SRL " + f.strftime("%d/%m/%Y")
+    obtenido = es_reciente(titulo, dias_ventana)
+    ok = obtenido == esperado
+    print("  %s remate de hace %d dia(s), ventana %d -> %s"
+          % ("ok  " if ok else "FALLA", dias_atras, dias_ventana,
+             "se procesa" if obtenido else "se omite"))
+    if not ok:
+        fallos.append("ventana %d/%d" % (dias_atras, dias_ventana))
+
+
+check_ventana(0, 4, True)      # el de hoy
+check_ventana(1, 4, True)      # el de ayer que no se alcanzo a procesar
+check_ventana(3, 4, True)      # fin de semana con la maquina apagada
+check_ventana(4, 4, True)      # justo en el borde: entra
+check_ventana(5, 4, False)     # ya es historial, se trae a mano
+check_ventana(30, 4, False)    # el mes pasado
+
+# Sin fecha en el titulo no se puede decidir: mejor mirarlo que perderlo.
+if es_reciente("FERCOGAN SRL COMMERCIAL AUCTION", 4):
+    print("  ok   sin fecha en el titulo -> se procesa igual")
+else:
+    print("  FALLA sin fecha en el titulo -> se omitio")
+    fallos.append("sin fecha")
 
 print("\n" + "=" * 58)
 if fallos:

@@ -75,7 +75,18 @@ def get_stream_url(video_url: str) -> str:
 
 
 def get_video_meta(video_url: str) -> dict:
-    """Duracion, fecha de subida y titulo del video (sin descargarlo)."""
+    """Duracion, fecha de subida, titulo y estado de la transmision.
+
+    `live_status` importa porque los remates son transmisiones EN VIVO de
+    varias horas. Si se lee un video mientras el remate todavia esta corriendo
+    se publicaria medio remate. Valores de yt-dlp:
+
+        is_live      el remate esta pasando ahora        -> no tocar
+        is_upcoming  anunciado, todavia no empezo        -> no tocar
+        post_live    termino recien, YouTube procesando  -> no tocar
+        was_live     grabacion completa disponible       -> se puede leer
+        not_live     video normal                        -> se puede leer
+    """
     out = subprocess.run(
         [sys.executable, "-m", "yt_dlp", "--no-warnings", *yt_args(), "-J", "--skip-download", video_url],
         capture_output=True, text=True,
@@ -83,12 +94,28 @@ def get_video_meta(video_url: str) -> dict:
     if out.returncode != 0 or not out.stdout.strip():
         raise SystemExit("ERROR: no se pudo leer metadata del video.\n" + out.stderr[-2000:])
     info = json.loads(out.stdout)
+    estado = info.get("live_status")
+    if estado is None:                      # yt-dlp viejo o campo ausente
+        if info.get("is_live"):
+            estado = "is_live"
+        elif info.get("was_live"):
+            estado = "was_live"
     return {
         "id": info.get("id"),
         "title": info.get("title") or "",
         "duration": int(info.get("duration") or 0),
         "upload_date": info.get("upload_date") or "",  # YYYYMMDD
+        "live_status": estado or "",
     }
+
+
+# Estados en los que la grabacion todavia no esta completa. Leer un remate
+# ahora daria precios parciales, que es peor que no publicar nada.
+EN_CURSO = ("is_live", "is_upcoming", "post_live")
+
+
+class RemateEnCurso(Exception):
+    """El remate todavia esta transmitiendose. Hay que esperar, no es un error."""
 
 
 def get_channel_latest_videos(channel_url: str, limit: int = 8) -> list:
@@ -404,6 +431,8 @@ def extraer_lotes_vendidos(video_url, start=60, end=11700, step=None,
     # que dejaba sin revisar las ultimas 2 horas del remate del 30/07, que dura
     # 5,3 h. Los remates de FERCOGAN van de 1 a 6 horas.
     meta = get_video_meta(video_url)
+    if meta.get("live_status") in EN_CURSO:
+        raise RemateEnCurso(meta["live_status"])
     if meta["duration"]:
         end = max(start + 60, meta["duration"] - 20)
 
