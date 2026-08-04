@@ -28,9 +28,21 @@ HISTORIAL_DIR = os.path.join(ROOT, "data", "historial")
 
 
 def es_remate(titulo: str) -> bool:
-    # Solo remates COMERCIALES (precio por categoria/kg). Se excluyen los remates
-    # de genetica/reproductores/embriones, que tienen otra estructura de precios.
-    return "remate comercial" in (titulo or "").lower()
+    """Reconoce un remate COMERCIAL (precio en Bs/kg por categoria).
+
+    FERCOGAN publica el mismo remate con el titulo en espanol o en ingles
+    ('REMATE COMERCIAL ...' / '... COMMERCIAL AUCTION ...'), asi que los
+    patrones salen de config/clasificacion.json en vez de estar fijos aca.
+    Se excluyen los remates de genetica, matrices y reproductores: esos se
+    venden por animal y no por kilo.
+    """
+    from engine import cargar_config
+    from engine.normalize import contiene_alguno
+
+    cfg = cargar_config()
+    if not contiene_alguno(titulo, cfg.patrones_remate):
+        return False
+    return not contiene_alguno(titulo, cfg.excluir_remate)
 
 
 def cargar_last_processed():
@@ -51,15 +63,46 @@ def guardar_last_processed(video_id, fecha):
 
 
 def fecha_desde_meta(meta):
-    # El titulo trae la fecha del remate en si (ej. "...30/07/2026"), que es mas
-    # confiable que la fecha de subida del video (puede variar por huso horario).
-    m = re.search(r"(\d{1,2})[/-](\d{1,2})[/-](\d{4})", meta.get("title") or "")
-    if m:
-        d, mo, y = m.groups()
-        return f"{y}-{int(mo):02d}-{int(d):02d}"
+    """Fecha del remate (ISO) a partir del titulo y la fecha de subida.
+
+    El titulo trae la fecha del remate en si, que es mas fiel que la de subida
+    (esta ultima puede correrse un dia por el huso horario). El problema es que
+    FERCOGAN publica el titulo en dos idiomas y el orden cambia:
+
+        "REMATE COMERCIAL FERCOGAN SRL 01/08/2026"    -> dia/mes  = 1 de agosto
+        "FERCOGAN SRL COMMERCIAL AUCTION 08/01/2026"  -> mes/dia  = 1 de agosto
+
+    Es el MISMO remate. Leer siempre dia/mes fecharia el segundo como 8 de
+    enero. Por eso se prueban las dos lecturas y se elige la que cae mas cerca
+    de la fecha de subida del video, que no es ambigua.
+    """
+    subida = None
     ymd = meta.get("upload_date") or ""
     if len(ymd) == 8:
-        return f"{ymd[0:4]}-{ymd[4:6]}-{ymd[6:8]}"
+        try:
+            subida = datetime(int(ymd[0:4]), int(ymd[4:6]), int(ymd[6:8]))
+        except ValueError:
+            subida = None
+
+    m = re.search(r"(\d{1,2})[/-](\d{1,2})[/-](\d{4})", meta.get("title") or "")
+    if m:
+        a, b, y = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        candidatos = []
+        for dia, mes in ((a, b), (b, a)):          # dia/mes y mes/dia
+            try:
+                candidatos.append(datetime(y, mes, dia))
+            except ValueError:
+                pass                                # p.ej. mes 30 no existe
+        if candidatos:
+            if subida and len(candidatos) > 1:
+                # la interpretacion mas cercana a la fecha de subida
+                elegida = min(candidatos, key=lambda f: abs((f - subida).days))
+            else:
+                elegida = candidatos[0]
+            return elegida.strftime("%Y-%m-%d")
+
+    if subida:
+        return subida.strftime("%Y-%m-%d")
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 

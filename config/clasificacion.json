@@ -47,6 +47,29 @@
     "_doc": "Si la clase, el sexo o la raza contienen alguno de estos patrones, el lote se descarta."
   },
 
+  "deteccion_remate": {
+    "patrones_titulo": [
+      "remate comercial",
+      "commercial auction"
+    ],
+    "excluir": [
+      "genetica", "genetics", "matrices", "reproductores", "reproductive",
+      "premium", "presentation", "presentacion", "donadoras", "elite",
+      "girolando", "embriones"
+    ],
+    "_doc": [
+      "Como se reconoce un remate comercial entre los videos del canal.",
+      "",
+      "FERCOGAN cambia el idioma de sus titulos: el remate del 01/08/2026 se",
+      "publico como 'REMATE COMERCIAL FERCOGAN SRL 01/08/2026' y dias despues",
+      "figuraba como 'FERCOGAN SRL COMMERCIAL AUCTION 08/01/2026'. Buscar solo",
+      "'remate comercial' habria dejado de reconocerlo.",
+      "",
+      "'excluir' descarta los remates de genetica, matrices y reproductores:",
+      "esos se venden por animal, no por Bs/kg, y no entran en este portal."
+    ]
+  },
+
   "tipos_remate": {
     "INVERNO": {
       "etiqueta": "Inverno",

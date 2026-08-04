@@ -73,6 +73,8 @@ class Config:
     modelo_repaso: str
     repaso_activo: bool
     paso_muestreo_seg: int
+    patrones_remate: Tuple[str, ...]
+    excluir_remate: Tuple[str, ...]
 
     # -- consultas ---------------------------------------------------------
     def categoria_por_id(self, cid: str) -> Optional[Categoria]:
@@ -170,6 +172,9 @@ def _construir(bruto: dict) -> Config:
         modelo_repaso=bruto.get("extraccion", {}).get("modelo_repaso", "claude-opus-5"),
         repaso_activo=bool(bruto.get("extraccion", {}).get("repaso_activo", True)),
         paso_muestreo_seg=int(bruto.get("extraccion", {}).get("paso_muestreo_seg", 25)),
+        patrones_remate=tuple(bruto.get("deteccion_remate", {}).get(
+            "patrones_titulo", ("remate comercial",))),
+        excluir_remate=tuple(bruto.get("deteccion_remate", {}).get("excluir", ())),
     )
 
 
