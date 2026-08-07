@@ -50,24 +50,69 @@ COOKIES_FILE = os.environ.get(
 )
 
 
-def yt_args():
-    # "android_vr" es el cliente que trae la lista completa de formatos
-    # (incluido el "18" que usa el motor) para videos con reclamos de
-    # copyright de fondo musical, que bloquean al cliente "web" normal.
-    # Las cookies hacen falta aparte para pasar el chequeo de bot de
-    # servidores en la nube (GitHub Actions, etc.).
-    args = ["--extractor-args", "youtube:player_client=android_vr"]
+# Clientes de YouTube a probar, en orden. Cual funciona VA CAMBIANDO: el
+# 07/08/2026 "android_vr" -- que hasta entonces era el bueno -- empezo a
+# recibir "Sign in to confirm you're not a bot" y dejo el portal sin poder
+# leer dos remates, mientras que "android" seguia entregando el formato 18.
+# Por eso se prueban varios en vez de fijar uno solo: cuando YouTube cambia
+# a quien bloquea, el motor se acomoda sin que haya que tocar codigo.
+CLIENTES_YT = ("android", "android_vr", "web_safari", "mweb")
+
+
+def yt_args(cliente: str = ""):
+    """Argumentos de yt-dlp para un cliente. Sin cliente, el primero de la lista.
+
+    Las cookies son un asunto aparte: hacen falta para pasar el chequeo de bot
+    de las IPs de servidores en la nube (GitHub Actions, etc.), donde ningun
+    cliente alcanza. En una PC hogarena normalmente no se necesitan.
+    """
+    args = ["--extractor-args", f"youtube:player_client={cliente or CLIENTES_YT[0]}"]
     if os.path.exists(COOKIES_FILE):
         args += ["--cookies", COOKIES_FILE]
     return args
 
 
+def _es_bloqueo_temporal(texto: str) -> bool:
+    """Distingue "YouTube no me deja AHORA" de "este video no se puede leer NUNCA".
+
+    Importa porque un video bloqueado por derechos de autor no tiene arreglo y
+    no debe trabar la cola, pero un chequeo de bot o un corte de internet si se
+    resuelven solos. Contar los dos como el mismo fallo hacia que tres
+    reintentos por hora descartaran para siempre un remate perfectamente legible.
+    """
+    t = (texto or "").lower()
+    return any(s in t for s in (
+        "not a bot", "sign in to confirm", "429", "too many requests",
+        "getaddrinfo failed", "temporary failure", "timed out", "connection",
+        "unable to download api page", "failed to extract",
+    ))
+
+
+def _correr_yt(args_extra, video_url, que_hace):
+    """Corre yt-dlp probando los clientes hasta que uno conteste.
+
+    Devuelve el CompletedProcess exitoso. Si ninguno funciona, levanta
+    SystemExit con el error del ultimo, que es lo que el resto del codigo ya
+    sabe manejar.
+    """
+    ultimo = None
+    for cliente in CLIENTES_YT:
+        out = subprocess.run(
+            [sys.executable, "-m", "yt_dlp", "--no-warnings", *yt_args(cliente),
+             *args_extra, video_url],
+            capture_output=True, text=True,
+        )
+        if out.returncode == 0 and out.stdout.strip():
+            if cliente != CLIENTES_YT[0]:
+                print(f"  (YouTube respondio con el cliente '{cliente}')")
+            return out
+        ultimo = out
+    raise SystemExit(f"ERROR: {que_hace}.\n" + (ultimo.stderr[-2000:] if ultimo else ""))
+
+
 def get_stream_url(video_url: str) -> str:
     print("· Obteniendo stream del video...")
-    out = subprocess.run(
-        [sys.executable, "-m", "yt_dlp", "--no-warnings", *yt_args(), "-f", "18", "-g", video_url],
-        capture_output=True, text=True,
-    )
+    out = _correr_yt(["-f", "18", "-g"], video_url, "no se pudo obtener el stream")
     lines = [l for l in out.stdout.strip().splitlines() if l.startswith("http")]
     if not lines:
         raise SystemExit("ERROR: no se pudo obtener el stream.\n" + out.stderr[-2000:])
@@ -87,12 +132,8 @@ def get_video_meta(video_url: str) -> dict:
         was_live     grabacion completa disponible       -> se puede leer
         not_live     video normal                        -> se puede leer
     """
-    out = subprocess.run(
-        [sys.executable, "-m", "yt_dlp", "--no-warnings", *yt_args(), "-J", "--skip-download", video_url],
-        capture_output=True, text=True,
-    )
-    if out.returncode != 0 or not out.stdout.strip():
-        raise SystemExit("ERROR: no se pudo leer metadata del video.\n" + out.stderr[-2000:])
+    out = _correr_yt(["-J", "--skip-download"], video_url,
+                     "no se pudo leer metadata del video")
     info = json.loads(out.stdout)
     estado = info.get("live_status")
     if estado is None:                      # yt-dlp viejo o campo ausente
@@ -336,10 +377,21 @@ def read_lot_with_claude(jpeg_bytes, client, model):
         try:
             msg = client.messages.create(
                 model=model, max_tokens=2000,
+                # Las instrucciones van en `system`, NO junto a la imagen, y
+                # marcadas para cachear. Son 1288 de los 1429 tokens de entrada
+                # (el 90%) y son identicas en los ~578 carteles de un remate.
+                #
+                # El cache es por PREFIJO: se renderiza system y despues
+                # messages. Con las instrucciones en system quedan siempre al
+                # principio y siempre iguales, asi que a partir del segundo
+                # cartel se cobran al 10%. Cuando estaban dentro del mensaje,
+                # DESPUES de la imagen, no se podian cachear: la imagen cambia
+                # en cada cartel y rompe el prefijo.
+                system=[{"type": "text", "text": PROMPT,
+                         "cache_control": {"type": "ephemeral"}}],
                 messages=[{"role": "user", "content": [
                     {"type": "image", "source": {"type": "base64",
                      "media_type": "image/jpeg", "data": b64}},
-                    {"type": "text", "text": PROMPT},
                 ]}],
             )
             # OJO: no se puede tomar content[0] a ciegas. Los modelos con

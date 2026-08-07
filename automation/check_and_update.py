@@ -271,7 +271,14 @@ def procesar_video(video, registro):
     except motor.SinCredito:
         raise                       # sin saldo se corta todo, no es culpa del video
     except SystemExit as e:
-        # video bloqueado, borrado, o YouTube rechazando el pedido
+        if motor._es_bloqueo_temporal(str(e)):
+            # Chequeo de bot, internet caido, YouTube saturado. Se resuelve
+            # solo, asi que NO se gasta un intento: si contara, tres corridas
+            # por hora bastarian para descartar un remate perfectamente
+            # legible. Paso el 07/08 con los remates del 04 y el 05.
+            print("    YouTube no responde ahora (bloqueo pasajero). Se reintenta.")
+            return None
+        # video bloqueado por derechos, borrado o privado: no tiene arreglo
         print(f"    no se pudo leer: {str(e)[:120]}")
         marcar("fallado", motivo=str(e))
         return None
