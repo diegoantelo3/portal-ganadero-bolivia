@@ -1,5 +1,5 @@
 {
-  "actualizado_el": "2026-08-07T16:00:10+00:00",
+  "actualizado_el": "2026-08-07T18:59:02+00:00",
   "videos": {
     "haEa9Z6LQFA": {
       "estado": "ok",
@@ -14,20 +14,20 @@
       "intentos": 1
     },
     "hyUqs2A7hzI": {
-      "estado": "fallado",
-      "fecha": "",
+      "estado": "ok",
+      "fecha": "2026-08-04",
       "titulo": "REMATE COMERCIAL FERCOGAN SRL Martes 04/08/2026",
-      "intentos": 1,
-      "motivo": "ERROR: no se pudo leer metadata del video.\nERROR: [youtube] hyUqs2A7hzI: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt",
-      "visto_el": "2026-08-07T16:00:08+00:00"
+      "intentos": 2,
+      "motivo": "",
+      "visto_el": "2026-08-07T18:07:52+00:00"
     },
     "I3iRMVBAszg": {
-      "estado": "fallado",
-      "fecha": "",
+      "estado": "ok",
+      "fecha": "2026-08-05",
       "titulo": "REMATE COMERCIAL FERCOGAN SRL  05/08/2026",
-      "intentos": 1,
-      "motivo": "ERROR: no se pudo leer metadata del video.\nERROR: [youtube] I3iRMVBAszg: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt",
-      "visto_el": "2026-08-07T16:00:10+00:00"
+      "intentos": 2,
+      "motivo": "",
+      "visto_el": "2026-08-07T18:59:02+00:00"
     }
   }
 }
