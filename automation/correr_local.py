@@ -2,22 +2,25 @@
 # -*- coding: utf-8 -*-
 """
 Corre el chequeo del canal y, si el portal cambio, lo publica (git push ->
-Netlify republica solo).
+GitHub Pages republica solo) y VERIFICA que la web muestre lo publicado.
 
 Pensado para el Programador de tareas de Windows: no pide nada por pantalla,
 deja todo en data/registro.log y termina con codigo 0 aunque falle, para que
 el Programador no lo marque como error y lo reintente en loop.
 """
 
+import json
 import os
 import subprocess
 import sys
+import time
 import traceback
 from datetime import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 LOG = os.path.join(ROOT, "data", "registro.log")
+ACTUAL_PATH = os.path.join(ROOT, "data", "remate_actual.json")
 
 sys.path.insert(0, ROOT)
 
@@ -44,8 +47,47 @@ def asegurar_identidad_git():
         log("Identidad de git configurada en este repositorio.")
 
 
+URL_PORTAL = "https://diegoantelo3.github.io/portal-ganadero-bolivia/"
+
+
+def verificar_publicado(fecha_esperada, intentos=6, espera=30):
+    """Comprueba que la web sirva de verdad el remate que acabamos de generar.
+
+    POR QUE HACE FALTA
+    Del 3 al 7 de agosto de 2026 el portal genero todo bien y subio todo bien,
+    pero Netlify se habia quedado sin creditos y descartaba cada deploy en
+    silencio: la web mostro datos de cuatro dias atras y nos enteramos de
+    casualidad. Publicar sin verificar es no saber si se publico.
+
+    Devuelve True si la fecha aparece en la pagina, False si no. No levanta
+    excepciones: un fallo de red aca no debe voltear la corrida, solo avisar.
+    """
+    import urllib.request
+
+    ddmmyyyy = "/".join(reversed(fecha_esperada.split("-")))   # 2026-08-05 -> 05/08/2026
+    for intento in range(1, intentos + 1):
+        try:
+            pedido = urllib.request.Request(
+                URL_PORTAL, headers={"Cache-Control": "no-cache"})
+            html = urllib.request.urlopen(pedido, timeout=45).read().decode("utf-8", "ignore")
+            if ddmmyyyy in html:
+                log(f"Verificado: la web ya muestra el remate del {ddmmyyyy}.")
+                return True
+        except Exception as e:
+            log(f"  (intento {intento}: no se pudo leer la web: {str(e)[:80]})")
+        if intento < intentos:
+            time.sleep(espera)
+
+    log(f"AVISO: se publico el remate del {ddmmyyyy} pero la web sigue sin mostrarlo "
+        f"despues de {intentos * espera // 60} minutos.\n"
+        f"  Los datos estan bien y ya subieron a GitHub: no hay que reprocesar nada.\n"
+        f"  Lo que falla es el servidor que publica la pagina. Revise {URL_PORTAL}\n"
+        f"  y la configuracion de GitHub Pages (Settings -> Pages) del repositorio.")
+    return False
+
+
 def publicar():
-    """Si hay cambios en el portal, los sube. Netlify republica solo."""
+    """Si hay cambios en el portal, los sube y verifica que la web los muestre."""
     asegurar_identidad_git()
     code, salida = git("status", "--porcelain")
     if code != 0:
@@ -65,7 +107,17 @@ def publicar():
     if code != 0:
         log(f"ERROR git push: {salida}")
         return
-    log("Cambios publicados. Netlify republica en ~1 minuto.")
+    log("Cambios subidos a GitHub. GitHub Pages republica en 1-3 minutos.")
+
+    # Solo tiene sentido verificar si lo que se publico es un remate: cuando el
+    # cambio es del registro interno, la pagina no cambia de fecha.
+    try:
+        with open(ACTUAL_PATH, encoding="utf-8") as f:
+            fecha = json.load(f).get("fecha", "")
+        if fecha:
+            verificar_publicado(fecha)
+    except Exception as e:
+        log(f"  (no se pudo verificar la publicacion: {str(e)[:80]})")
 
 
 def repasar_pendientes():

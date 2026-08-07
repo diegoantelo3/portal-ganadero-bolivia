@@ -1,0 +1,8 @@
+Este archivo vacio le dice a GitHub Pages que publique el HTML tal cual, sin
+pasarlo por Jekyll.
+
+Importa porque Jekyll interpreta las llaves dobles y los {% %} como plantilla
+y los borra del resultado. Hoy no queda ninguna en index.html, pero los precios
+y los nombres de categoria salen de datos que cambian todos los dias: si alguna
+vez un cartel produce ese texto, Jekyll se lo comeria en silencio y la pagina
+saldria rota sin ningun error.

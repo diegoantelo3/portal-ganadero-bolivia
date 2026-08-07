@@ -15,11 +15,39 @@ Portal con los precios del remate comercial de FERCOGAN, actualizado solo.
    vendidos.
 4. `build_site.py` toma esos datos (`data/remate_actual.json`) y regenera
    `index.html` a partir de `template.html`.
-5. El script hace commit y push a GitHub. Netlify, conectado a este
-   repositorio, republica el sitio solo en cuanto detecta el push.
+5. El script hace commit y push a GitHub. **GitHub Pages** republica el sitio
+   solo en 1-3 minutos.
+6. Después de publicar, el script **verifica que la web muestre de verdad** el
+   remate recién generado, y avisa en el registro si no aparece.
 
 Si no hay remate nuevo, no cambia nada. Todo queda registrado en
 `data/registro.log`.
+
+**Dirección del portal:** https://diegoantelo3.github.io/portal-ganadero-bolivia/
+
+### ¿Por qué GitHub Pages y no Netlify?
+
+El portal empezó en Netlify. El 7 de agosto de 2026 se descubrió que la página
+llevaba **cuatro días mostrando datos viejos**: el equipo de Netlify se había
+quedado sin créditos del ciclo de facturación y descartaba cada deploy con un
+`Skipped — account credit usage exceeded`. El motor generaba y subía todo
+correctamente; lo que fallaba era la publicación, en silencio.
+
+GitHub Pages no tiene créditos de build para repositorios públicos, así que ese
+modo de falla desaparece. El sitio es HTML estático en la raíz del repo, que es
+justo lo que Pages sirve sin configuración.
+
+El archivo `.nojekyll` es necesario: sin él, Pages pasa el HTML por Jekyll, que
+interpreta las llaves dobles como plantilla y las borra. Hoy `index.html` no
+tiene ninguna, pero los precios y nombres salen de datos que cambian a diario.
+
+### Verificar que se publicó no es opcional
+
+`publicar()` sube los cambios y después consulta la web para confirmar que la
+fecha del remate aparece. Reintenta durante ~3 minutos y, si no aparece, deja
+un aviso claro en el registro: los datos están bien y no hay que reprocesar
+nada — lo que falla es el servidor. Publicar sin verificar es no saber si se
+publicó, y eso ya costó cuatro días de datos viejos.
 
 ### ¿Por qué cada hora y no una vez al día?
 
