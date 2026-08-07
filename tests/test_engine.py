@@ -72,23 +72,30 @@ check("vacio -> None (no 0)", a_numero("") is None)
 check("None -> None", a_numero(None) is None)
 
 print("\n== Clasificacion POR PESO (COMPLEMENTARIOS) ==")
-casos_macho = [(0, "Ternero"), (130, "Ternero"), (130.9, "Ternero"), (131, "Destete Machos"),
-               (220, "Destete Machos"), (221, "Torillos Recría"), (300, "Torillos Recría"),
-               (301, "Torillos para Engorde"), (400, "Torillos para Engorde"),
-               (401, "Torillos"), (520, "Torillos"), (521, "Toros Gordos"), (900, "Toros Gordos")]
+# Se compara contra el ID de la categoria, NO contra el nombre visible: el
+# nombre es texto que se cambia desde config/clasificacion.json cuando la
+# ganaderia lo pide (paso el 07/08/2026, "Torillos" -> "Torillos Gordos") y
+# renombrar una categoria no debe romper un test de clasificacion por peso.
+casos_macho = [(0, "ternero"), (130, "ternero"), (130.9, "ternero"),
+               (131, "destete_machos"), (220, "destete_machos"),
+               (221, "torillos_recria"), (300, "torillos_recria"),
+               (301, "torillos_engorde"), (400, "torillos_engorde"),
+               (401, "torillos"), (520, "torillos"),
+               (521, "toros_gordos"), (900, "toros_gordos")]
 for peso, esperado in casos_macho:
     c = clasificar_por_peso("macho", peso, "COMPLEMENTARIOS", CFG)
-    check(f"macho {peso} kg -> {esperado}", c is not None and c.nombre == esperado,
-          f"(dio {c.nombre if c else None})")
+    check(f"macho {peso} kg -> {esperado}", c is not None and c.id == esperado,
+          f"(dio {c.id if c else None})")
 
-casos_hembra = [(0, "Ternera"), (130, "Ternera"), (131, "Destete Hembras"),
-                (210, "Destete Hembras"), (211, "Vaquillas Recría"), (270, "Vaquillas Recría"),
-                (271, "Vaquillas Reposición"), (320, "Vaquillas Reposición"),
-                (321, "Vaquillas"), (430, "Vaquillas"), (431, "Vacas"), (900, "Vacas")]
+casos_hembra = [(0, "ternera"), (130, "ternera"), (131, "destete_hembras"),
+                (210, "destete_hembras"), (211, "vaquillas_recria"),
+                (270, "vaquillas_recria"), (271, "vaquillas_reposicion"),
+                (320, "vaquillas_reposicion"), (321, "vaquillas"), (430, "vaquillas"),
+                (431, "vacas"), (900, "vacas")]
 for peso, esperado in casos_hembra:
     c = clasificar_por_peso("hembra", peso, "COMPLEMENTARIOS", CFG)
-    check(f"hembra {peso} kg -> {esperado}", c is not None and c.nombre == esperado,
-          f"(dio {c.nombre if c else None})")
+    check(f"hembra {peso} kg -> {esperado}", c is not None and c.id == esperado,
+          f"(dio {c.id if c else None})")
 
 print("\n== Sin huecos: todo peso valido cae en exactamente una categoria ==")
 huecos = []
@@ -232,7 +239,8 @@ r = procesar_remate([lote(lote=437, clase="Toro", sexo="macho", cantidad=6,
                           subtotal_bs=8833.21, total_bs=52999.24)],
                     titulo_video="REMATE COMERCIAL")
 check("corregido el peso, 'Toro' ya NO entra en conflicto con la categoria",
-      r.clasificados[0].categoria == "Torillos" and not r.auditoria.conflictos,
+      r.clasificados[0].categoria == CFG.categoria_por_id("torillos").nombre
+      and not r.auditoria.conflictos,
       f"(cat={r.clasificados[0].categoria}, conflictos={len(r.auditoria.conflictos)})")
 
 print("\n== Categorias sin datos quedan declaradas ==")

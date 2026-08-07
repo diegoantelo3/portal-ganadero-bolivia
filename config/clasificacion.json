@@ -155,14 +155,14 @@
     },
     {
       "id": "torillos",
-      "nombre": "Torillos",
+      "nombre": "Torillos Gordos",
       "sexo": "macho",
       "desde_kg": 401,
       "hasta_kg": 521,
       "remates": ["CONSUMO", "COMPLEMENTARIOS"],
       "subtitulo": "macho · 401–520 kg",
-      "etiqueta_corta": "Torillos",
-      "etiqueta_estimador": "Torillos",
+      "etiqueta_corta": "Tor. gordos",
+      "etiqueta_estimador": "Torillos Gordos",
       "clases_esperadas": ["torillo", "torillos", "novillo", "novillos", "toro", "toros"]
     },
     {
