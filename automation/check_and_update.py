@@ -116,33 +116,75 @@ def guardar_procesados(registro):
         }, f, ensure_ascii=False, indent=2)
 
 
-def fecha_del_titulo(titulo):
-    """Fecha que declara el titulo, sin consultar YouTube (gratis).
+def fechas_posibles_del_titulo(titulo):
+    """Las lecturas validas de la fecha del titulo, sin consultar YouTube.
 
-    Sirve para decidir si un remate entra en la ventana de dias que se procesa
-    automaticamente. Ante la ambiguedad dia/mes vs mes/dia se toma la lectura
-    mas cercana a hoy, que para filtrar por antiguedad alcanza y sobra.
+    FERCOGAN publica en dos idiomas y el orden cambia, asi que "08/07/2026"
+    puede ser el 8 de julio (dia/mes) o el 7 de agosto (mes/dia). Devuelve las
+    dos cuando ambas existen; una sola cuando no hay ambigüedad posible (un 30
+    no puede ser mes); vacia si el titulo no trae fecha.
     """
     m = re.search(r"(\d{1,2})[/-](\d{1,2})[/-](\d{4})", titulo or "")
     if not m:
-        return None
+        return []
     a, b, y = int(m.group(1)), int(m.group(2)), int(m.group(3))
-    hoy = datetime.now()
-    opciones = []
+    fechas = []
     for dia, mes in ((a, b), (b, a)):
         try:
-            opciones.append(datetime(y, mes, dia))
+            f = datetime(y, mes, dia)
         except ValueError:
-            pass
-    return min(opciones, key=lambda f: abs((f - hoy).days)) if opciones else None
+            continue
+        if f not in fechas:
+            fechas.append(f)
+    return fechas
 
 
-def es_reciente(titulo, dias):
-    """True si el remate esta dentro de la ventana (o si no se sabe la fecha)."""
-    f = fecha_del_titulo(titulo)
-    if f is None:
+def es_reciente(titulo, dias, si_ambiguo=False):
+    """True si el remate entra en la ventana de dias que se procesa sola.
+
+    Cuando las dos lecturas de la fecha caen del mismo lado de la ventana no
+    importa cual sea la buena: la respuesta es la misma. Solo hace falta
+    desempatar cuando discrepan -- el caso "08/07" mirado un 07/08, que haria
+    pasar por nuevo un remate de hace un mes -- y ahi decide `si_ambiguo`, que
+    el llamador resuelve por la posicion en el canal (ver separar_por_fecha).
+
+    Deliberadamente NO consulta YouTube: la primera version pedia la fecha de
+    subida y una verificacion anti-bot volteaba la corrida entera.
+    """
+    fechas = fechas_posibles_del_titulo(titulo)
+    if not fechas:
         return True          # sin fecha en el titulo, mejor mirarlo que perderlo
-    return (datetime.now() - f).days <= dias
+
+    hoy = datetime.now()
+    dentro = {(hoy - f).days <= dias for f in fechas}
+    return dentro.pop() if len(dentro) == 1 else si_ambiguo
+
+
+def separar_por_fecha(faltantes, remates, registro, dias):
+    """Divide los remates sin procesar en (recientes, viejos).
+
+    El desempate de las fechas ambiguas sale del ORDEN del canal, que YouTube
+    ya devuelve del mas nuevo al mas viejo y no cuesta ni una consulta extra:
+    si el video esta por encima del ultimo que procesamos, es mas nuevo que
+    ese, asi que es de los que hay que mirar. Si esta por debajo, es historial.
+    """
+    pos = {v["id"]: i for i, v in enumerate(remates)}
+    # El procesado mas nuevo: primero de la lista con estado ok.
+    corte = next((i for i, v in enumerate(remates)
+                  if registro.get(v["id"], {}).get("estado") == "ok"), None)
+
+    recientes, viejos = [], []
+    for v in faltantes:
+        if corte is None:
+            # Arranque en frio: no hay con que comparar. Que decida la fecha
+            # mas cercana a hoy, que es lo mas probable en un canal activo.
+            ambiguo = min(fechas_posibles_del_titulo(v["title"]) or [datetime.now()],
+                          key=lambda f: abs((f - datetime.now()).days))
+            si_ambiguo = (datetime.now() - ambiguo).days <= dias
+        else:
+            si_ambiguo = pos[v["id"]] < corte
+        (recientes if es_reciente(v["title"], dias, si_ambiguo) else viejos).append(v)
+    return recientes, viejos
 
 
 def hay_que_procesar(video_id, registro):
@@ -274,12 +316,14 @@ def main():
 
     registro = cargar_procesados()
     faltantes = [v for v in remates if hay_que_procesar(v["id"], registro)]
+
     # Solo los recientes: sin este limite la primera corrida se pondria a leer
     # todo el canal. Los mas viejos se traen a mano con reprocesar_historial.py.
-    viejos = [v for v in faltantes if not es_reciente(v["title"], dias)]
+    recientes, viejos = separar_por_fecha(faltantes, remates, registro, dias)
+
     # El canal devuelve el mas nuevo primero; se procesa del mas VIEJO al mas
     # nuevo para que el ultimo que quede publicado sea el mas reciente.
-    pendientes = [v for v in faltantes if es_reciente(v["title"], dias)][::-1]
+    pendientes = recientes[::-1]
 
     if viejos:
         print(f"  ({len(viejos)} remate(s) de mas de {dias} dias se omiten; "
@@ -290,6 +334,12 @@ def main():
         return
 
     print(f"  {len(pendientes)} remate(s) por procesar.")
+
+    # Recien aca se toca la API: si no habia nada pendiente, la corrida no
+    # gasta ni un centavo. Y si la clave no sirve, se corta ANTES de bajar
+    # horas de video en vano.
+    motor.verificar_clave()
+
     procesados_ok = []
     try:
         for v in pendientes:

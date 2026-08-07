@@ -125,6 +125,66 @@ except motor.SinCredito:
 except Exception as e:
     check("read_lot_with_claude corta con SinCredito", False, f"(lanzo {type(e).__name__})")
 
+
+# --------------------------------------------------------------------------
+# La clave se comprueba ANTES de bajar el video
+# --------------------------------------------------------------------------
+print("\n== verificar_clave() corta antes de tocar el video ==")
+
+
+class ClienteClaveInvalida:
+    """Lo que devolvio la API entre el 3 y el 7 de agosto."""
+    class messages:
+        @staticmethod
+        def create(**_kw):
+            raise Exception(
+                "Error code: 401 - {'type': 'error', 'error': {'type': "
+                "'authentication_error', 'message': 'API key is invalid.'}}")
+
+
+class ClienteSano:
+    class messages:
+        @staticmethod
+        def create(**_kw):
+            return object()
+
+
+try:
+    motor.verificar_clave(ClienteClaveInvalida())
+    check("clave invalida -> SinCredito", False, "(no lanzo nada)")
+except motor.SinCredito:
+    check("clave invalida -> SinCredito", True)
+except Exception as e:
+    check("clave invalida -> SinCredito", False, f"(lanzo {type(e).__name__})")
+
+try:
+    motor.verificar_clave(ClienteSinSaldo())
+    check("sin saldo -> SinCredito", False, "(no lanzo nada)")
+except motor.SinCredito:
+    check("sin saldo -> SinCredito", True)
+except Exception as e:
+    check("sin saldo -> SinCredito", False, f"(lanzo {type(e).__name__})")
+
+check("clave valida -> devuelve el cliente",
+      motor.verificar_clave(ClienteSano()) is not None)
+
+
+class ClienteCaido:
+    """Un error que NO es de credencial no debe disfrazarse de SinCredito."""
+    class messages:
+        @staticmethod
+        def create(**_kw):
+            raise Exception("Error code: 529 - overloaded_error")
+
+
+try:
+    motor.verificar_clave(ClienteCaido())
+    check("error ajeno no se confunde con SinCredito", False, "(no lanzo nada)")
+except motor.SinCredito:
+    check("error ajeno no se confunde con SinCredito", False, "(lanzo SinCredito)")
+except Exception:
+    check("error ajeno no se confunde con SinCredito", True)
+
 print("\n" + "=" * 58)
 if fallos:
     print(f"FALLARON {len(fallos)} verificaciones:")

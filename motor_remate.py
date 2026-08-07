@@ -300,6 +300,36 @@ def _es_falta_de_credito(e) -> bool:
     return any(s in str(e).lower() for s in _SENALES_SIN_CREDITO)
 
 
+def verificar_clave(client=None):
+    """Comprueba que la clave sirve ANTES de bajar el video. Devuelve el cliente.
+
+    Sin esto, una clave vencida se descubre recien despues de descargar y
+    escanear el video entero: primero se gastan 20-40 minutos de video y despues
+    falla en el primer cartel. Con la tarea corriendo cada hora, eso es una
+    descarga inutil de varias horas de video POR HORA, hasta que alguien mire el
+    registro. Fue exactamente lo que paso entre el 3 y el 7 de agosto.
+
+    El ping usa Haiku aunque se lea con otro modelo: lo que se valida es la
+    credencial y el saldo de la cuenta, que no dependen del modelo. Cuesta una
+    fraccion de centavo y tarda ~1 s.
+    """
+    client = client or get_client()
+    try:
+        client.messages.create(
+            model="claude-haiku-4-5-20251001", max_tokens=4,
+            messages=[{"role": "user", "content": "ok"}],
+        )
+    except Exception as e:
+        if _es_falta_de_credito(e):
+            raise SinCredito(
+                "La clave de la API no sirve o la cuenta no tiene saldo.\n"
+                "  NO se descargo ningun video y NO se modifico el portal.\n"
+                "  Revise https://console.anthropic.com (API Keys / Plans & Billing).\n"
+                f"  Detalle: {e}") from e
+        raise
+    return client
+
+
 def read_lot_with_claude(jpeg_bytes, client, model):
     b64 = base64.b64encode(jpeg_bytes).decode()
     for intento in range(3):

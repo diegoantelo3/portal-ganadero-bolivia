@@ -1,6 +1,5 @@
 {
-  "_doc": "Videos del canal ya procesados. Evita releer (y volver a pagar) un remate que ya esta en el historial. 'fallado' se reintenta hasta MAX_INTENTOS y despues se deja pasar, para que un video bloqueado no trabe la cola.",
-  "actualizado_el": "2026-08-03T00:00:00+00:00",
+  "actualizado_el": "2026-08-07T15:45:00+00:00",
   "videos": {
     "haEa9Z6LQFA": {
       "estado": "ok",
