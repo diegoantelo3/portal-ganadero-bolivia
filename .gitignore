@@ -5,3 +5,6 @@ clave.txt
 cookies.txt
 registro.log
 .venv/
+# Progreso de una corrida a medio terminar. Es local y temporal: se borra solo
+# cuando el video queda leido entero.
+data/parciales/

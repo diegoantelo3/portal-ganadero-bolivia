@@ -487,6 +487,82 @@ def get_client(key: str = "", avisar=True):
 
 
 # --------------------------------------------------------------------------
+# 3b. Guardar lo ya leido, para poder retomar una corrida cortada
+# --------------------------------------------------------------------------
+# Leer un remate largo son ~40 minutos y varios dolares. Si la corrida se corta
+# a mitad -- se apago la maquina, se acabo el saldo, se cayo internet -- todo lo
+# leido hasta ahi se perdia y habia que volver a PAGARLO. Paso dos veces en una
+# misma semana (07/08/2026: sin saldo a las 11:45, reinicio de la PC a las 13:10).
+#
+# Cada cartel leido se anota en data/parciales/<video>.jsonl apenas se lee. Al
+# arrancar, si el archivo corresponde EXACTAMENTE al mismo trabajo, esas
+# lecturas se reusan y no se vuelven a pagar. Al terminar bien, se borra.
+DIR_PARCIALES = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             "data", "parciales")
+
+
+def _ruta_parcial(video_id: str) -> str:
+    return os.path.join(DIR_PARCIALES, f"{video_id}.jsonl")
+
+
+def _firma_trabajo(video_id, start, end, step, total) -> str:
+    """Identifica el trabajo exacto. Si algo cambia, lo guardado no sirve.
+
+    El indice de cada cartel solo significa lo mismo si el recorrido del video
+    fue identico: mismo video, mismo tramo, mismo paso y misma cantidad de
+    carteles detectados. Cambiar el muestreo de 10 a 20 s, por ejemplo, corre
+    todos los indices y reusar lo viejo mezclaria lotes distintos.
+    """
+    return f"{video_id}|{start}|{end}|{step}|{total}"
+
+
+def cargar_parcial(video_id, firma) -> dict:
+    """{indice: lectura} de una corrida anterior que no llego a terminar."""
+    ruta = _ruta_parcial(video_id)
+    if not os.path.exists(ruta):
+        return {}
+    hechos = {}
+    try:
+        with open(ruta, encoding="utf-8") as f:
+            cabecera = f.readline().strip()
+            if cabecera != firma:
+                return {}          # es de otro trabajo: se ignora entero
+            for linea in f:
+                linea = linea.strip()
+                if not linea:
+                    continue
+                try:
+                    reg = json.loads(linea)
+                    hechos[int(reg["i"])] = reg["d"]
+                except (ValueError, KeyError):
+                    break          # ultima linea a medio escribir: se corta ahi
+    except OSError:
+        return {}
+    return hechos
+
+
+def anotar_parcial(video_id, firma, indice, dato) -> None:
+    """Anota un cartel recien leido. Se llama una vez por cartel."""
+    try:
+        os.makedirs(DIR_PARCIALES, exist_ok=True)
+        ruta = _ruta_parcial(video_id)
+        nuevo = not os.path.exists(ruta)
+        with open(ruta, "a", encoding="utf-8") as f:
+            if nuevo:
+                f.write(firma + "\n")
+            f.write(json.dumps({"i": indice, "d": dato}, ensure_ascii=False) + "\n")
+    except OSError:
+        pass                       # no poder anotar no debe voltear la lectura
+
+
+def borrar_parcial(video_id) -> None:
+    try:
+        os.remove(_ruta_parcial(video_id))
+    except OSError:
+        pass
+
+
+# --------------------------------------------------------------------------
 # 4. Extraer los lotes vendidos de un video (reusable, sin CLI ni CSV)
 # --------------------------------------------------------------------------
 def extraer_lotes_vendidos(video_url, start=60, end=11700, step=None,
@@ -524,7 +600,13 @@ def extraer_lotes_vendidos(video_url, start=60, end=11700, step=None,
     lots = detect_lot_frames(stream, start, end, step)
 
     client = client or get_client()
-    print(f"· Pasada 1: leyendo {len(lots)} carteles con {model}...")
+
+    firma = _firma_trabajo(meta["id"], start, end, step, len(lots))
+    hechos = cargar_parcial(meta["id"], firma)
+    if hechos:
+        print(f"· Retomando: {len(hechos)} de {len(lots)} carteles ya estaban "
+              f"leidos de una corrida anterior (no se vuelven a pagar).")
+    print(f"· Pasada 1: leyendo {len(lots) - len(hechos)} carteles con {model}...")
 
     # El unico filtro que aplica el EXTRACTOR es el de deduplicacion: el mismo
     # lote aparece en varios frames y hay que quedarse con el precio de cierre
@@ -532,19 +614,26 @@ def extraer_lotes_vendidos(video_url, start=60, end=11700, step=None,
     # el motor -> no hay numeros duplicados entre este archivo y engine/.
     vendidos, frames = {}, {}
     for k, l in enumerate(lots):
-        try:
-            d = read_lot_with_claude(crop_to_jpeg(l["crop"]), client, model)
-        except SinCredito as e:
-            # Cortar SIN devolver nada: un remate leido a medias publicado como
-            # completo es peor que no actualizar. El llamador no escribe nada.
-            raise SinCredito(
-                f"Se corto la lectura en el cartel {k + 1} de {len(lots)}: "
-                f"falta saldo en la API de Anthropic.\n"
-                f"  Cargue credito en https://console.anthropic.com "
-                f"(Plans & Billing) y vuelva a correr.\n"
-                f"  NO se modifico ningun dato del portal.\n"
-                f"  Detalle: {e}"
-            ) from e
+        if k in hechos:
+            d = hechos[k]              # ya se leyo (y se pago) en otra corrida
+        else:
+            try:
+                d = read_lot_with_claude(crop_to_jpeg(l["crop"]), client, model)
+                anotar_parcial(meta["id"], firma, k, d)
+            except SinCredito as e:
+                # Cortar SIN devolver nada: un remate leido a medias publicado
+                # como completo es peor que no actualizar. El llamador no
+                # escribe nada, pero lo leido queda anotado en data/parciales/
+                # y la proxima corrida lo reusa sin volver a pagarlo.
+                raise SinCredito(
+                    f"Se corto la lectura en el cartel {k + 1} de {len(lots)}: "
+                    f"falta saldo en la API de Anthropic.\n"
+                    f"  Cargue credito en https://console.anthropic.com "
+                    f"(Plans & Billing) y vuelva a correr.\n"
+                    f"  NO se modifico ningun dato del portal. Los {k} carteles "
+                    f"ya leidos quedan guardados y no se vuelven a cobrar.\n"
+                    f"  Detalle: {e}"
+                ) from e
         if d.get("vacio") or not d.get("lote"):
             continue
         try:
@@ -589,6 +678,8 @@ def extraer_lotes_vendidos(video_url, start=60, end=11700, step=None,
 
     filas = sorted(vendidos.values(), key=lambda x: x["lote"])
     print(f"· Lotes con precio de cierre extraidos: {len(filas)}")
+    # El video quedo leido entero: lo anotado ya no hace falta.
+    borrar_parcial(meta["id"])
     return filas, meta
 
 

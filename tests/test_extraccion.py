@@ -185,6 +185,52 @@ except motor.SinCredito:
 except Exception:
     check("error ajeno no se confunde con SinCredito", True)
 
+
+# --------------------------------------------------------------------------
+# Retomar una corrida cortada sin volver a pagar
+# --------------------------------------------------------------------------
+print("\n== Lo ya leido se guarda y se reusa ==")
+
+import shutil                                             # noqa: E402
+import tempfile                                           # noqa: E402
+
+_dir_real = motor.DIR_PARCIALES
+motor.DIR_PARCIALES = tempfile.mkdtemp(prefix="parciales_")
+try:
+    FIRMA = motor._firma_trabajo("vid123", 60, 30000, 10, 578)
+
+    check("sin archivo previo, no hay nada que retomar",
+          motor.cargar_parcial("vid123", FIRMA) == {})
+
+    motor.anotar_parcial("vid123", FIRMA, 0, {"lote": 401, "precio_bs_kg": 20.5})
+    motor.anotar_parcial("vid123", FIRMA, 7, {"vacio": True})
+    hechos = motor.cargar_parcial("vid123", FIRMA)
+    check("se recuperan las lecturas anotadas", hechos.get(0, {}).get("lote") == 401
+          and hechos.get(7, {}).get("vacio") is True, f"({sorted(hechos)})")
+
+    # Lo mas importante: un archivo de OTRO trabajo no debe reusarse. Los
+    # indices solo significan lo mismo si el recorrido del video fue identico.
+    otra = motor._firma_trabajo("vid123", 60, 30000, 20, 578)     # paso 20 s
+    check("cambiar el muestreo invalida lo guardado",
+          motor.cargar_parcial("vid123", otra) == {})
+    menos = motor._firma_trabajo("vid123", 60, 30000, 10, 300)    # otro conteo
+    check("cambiar la cantidad de carteles invalida lo guardado",
+          motor.cargar_parcial("vid123", menos) == {})
+
+    # Una corrida cortada deja la ultima linea a medio escribir.
+    with open(motor._ruta_parcial("vid123"), "a", encoding="utf-8") as f:
+        f.write('{"i": 9, "d": {"lote": 4')
+    hechos = motor.cargar_parcial("vid123", FIRMA)
+    check("una linea cortada por la mitad no rompe la lectura",
+          sorted(hechos) == [0, 7], f"({sorted(hechos)})")
+
+    motor.borrar_parcial("vid123")
+    check("al terminar bien, se borra", motor.cargar_parcial("vid123", FIRMA) == {})
+    motor.borrar_parcial("vid123")          # borrar dos veces no debe reventar
+finally:
+    shutil.rmtree(motor.DIR_PARCIALES, ignore_errors=True)
+    motor.DIR_PARCIALES = _dir_real
+
 print("\n" + "=" * 58)
 if fallos:
     print(f"FALLARON {len(fallos)} verificaciones:")
